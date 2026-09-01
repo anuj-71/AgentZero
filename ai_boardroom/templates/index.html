@@ -513,15 +513,21 @@ textarea.form-input{resize:none;height:130px;line-height:1.5}
 .risk-high{background:rgba(239,68,68,.2);color:var(--red)}
 .risk-med{background:rgba(245,158,11,.2);color:var(--amber)}
 .rejected-desc{font-size:11px;color:var(--text3);line-height:1.5}
-.surprise-panel{padding:20px}
-.surprise-input{
-  width:100%;background:var(--bg3);border:1px solid var(--border);
-  border-radius:8px;color:var(--text);font-size:12px;
-  padding:10px 12px;resize:none;height:90px;line-height:1.5;
-  margin-bottom:10px;
+.surprise-panel{padding:16px;overflow-y:auto}
+.surp-btn{
+  background:var(--bg4);border:1px solid var(--border);color:var(--text3);
+  font-size:11px;font-weight:600;padding:6px 5px;border-radius:7px;
+  cursor:pointer;width:100%;text-align:center;transition:all .15s;
 }
-.surprise-input::placeholder{color:var(--text3)}
-.surprise-input:focus{border-color:var(--purple)}
+.surp-btn:hover{border-color:var(--amber);color:var(--amber)}
+.surp-btn.active{background:rgba(245,158,11,.12);border-color:var(--amber);color:var(--amber)}
+.surp-sev{
+  background:var(--bg4);border:1px solid var(--border);color:var(--text3);
+  font-size:11px;font-weight:600;padding:5px 4px;border-radius:7px;
+  cursor:pointer;width:100%;text-align:center;transition:all .15s;
+}
+.surp-sev:hover{border-color:var(--purple);color:var(--purple3)}
+.surp-sev.active{background:rgba(124,58,237,.15);border-color:var(--purple2);color:var(--purple3)}
 .btn-trigger{
   width:100%;background:var(--bg3);border:1px solid var(--border);
   color:var(--text2);font-size:12px;font-weight:600;
@@ -1156,10 +1162,90 @@ textarea.form-input{resize:none;height:130px;line-height:1.5}
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
           <span style="color:var(--amber)">SURPRISE EVENT</span>
         </div>
-        <p style="font-size:12px;color:var(--text3);margin-bottom:10px;line-height:1.5">Inject a new external variable to force the swarm to re-evaluate this decision.</p>
-        <textarea class="surprise-input" id="surprise-input" placeholder="e.g. 'Competitor X just slashed prices by 20% in the pilot region...'"></textarea>
+        <p style="font-size:11px;color:var(--text3);margin-bottom:10px;line-height:1.5">Inject a business change — the swarm re-evaluates and revises the CEO decision.</p>
+
+        <div style="margin-bottom:10px">
+          <div class="form-label" style="margin-bottom:6px">CHANGE TYPE</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px">
+            <button class="surp-btn active" data-t="budget"     onclick="setSurpType(this,'budget')">💸 Budget Cut</button>
+            <button class="surp-btn"        data-t="competitor" onclick="setSurpType(this,'competitor')">🏴 Competitor</button>
+            <button class="surp-btn"        data-t="supply"     onclick="setSurpType(this,'supply')">🚚 Supply Chain</button>
+            <button class="surp-btn"        data-t="demand"     onclick="setSurpType(this,'demand')">📈 Demand Shift</button>
+            <button class="surp-btn"        data-t="regulatory" onclick="setSurpType(this,'regulatory')">⚖️ Regulation</button>
+            <button class="surp-btn"        data-t="custom"     onclick="setSurpType(this,'custom')">✏️ Custom</button>
+          </div>
+        </div>
+
+        <div id="sf-budget">
+          <div class="form-label" style="margin-bottom:4px">BUDGET REDUCTION</div>
+          <select id="sb-pct" class="form-input" style="width:100%;margin-bottom:8px;padding:7px 10px;font-size:12px">
+            <option value="10">−10% (minor cut)</option>
+            <option value="20" selected>−20% (significant cut)</option>
+            <option value="30">−30% (severe cut)</option>
+            <option value="50">−50% (critical cut)</option>
+          </select>
+          <div class="form-label" style="margin-bottom:4px">REASON</div>
+          <input id="sb-reason" class="form-input" style="width:100%;margin-bottom:8px;font-size:12px" value="Board reduced expansion budget due to domestic market pressures." placeholder="Why was budget cut?">
+        </div>
+        <div id="sf-competitor" style="display:none">
+          <div class="form-label" style="margin-bottom:4px">COMPETITOR</div>
+          <input id="sc-name" class="form-input" style="width:100%;margin-bottom:8px;font-size:12px" value="Amazon Fresh" placeholder="Competitor name">
+          <div class="form-label" style="margin-bottom:4px">ACTION</div>
+          <select id="sc-action" class="form-input" style="width:100%;margin-bottom:8px;padding:7px 10px;font-size:12px">
+            <option>Slashed prices by 20% in target market</option>
+            <option>Announced 50 new stores in our target region</option>
+            <option>Launched a loyalty programme targeting our customers</option>
+            <option>Acquired a key local competitor</option>
+          </select>
+        </div>
+        <div id="sf-supply" style="display:none">
+          <div class="form-label" style="margin-bottom:4px">DISRUPTION</div>
+          <select id="ss-type" class="form-input" style="width:100%;margin-bottom:8px;padding:7px 10px;font-size:12px">
+            <option>Key supplier insolvent — 40% of supply at risk</option>
+            <option>Port strikes — 6-month logistics delay</option>
+            <option>Raw material costs up 35%</option>
+            <option>Lead times doubled due to capacity cuts</option>
+          </select>
+          <div class="form-label" style="margin-bottom:4px">EXTRA COST (£M)</div>
+          <input id="ss-cost" class="form-input" style="width:100%;margin-bottom:8px;font-size:12px" value="8" placeholder="e.g. 8">
+        </div>
+        <div id="sf-demand" style="display:none">
+          <div class="form-label" style="margin-bottom:4px">DEMAND CHANGE</div>
+          <select id="sd-dir" class="form-input" style="width:100%;margin-bottom:8px;padding:7px 10px;font-size:12px">
+            <option>+40% demand spike — infrastructure not ready</option>
+            <option>−30% demand drop — negative consumer sentiment</option>
+            <option>+20% demand in secondary market only</option>
+          </select>
+          <div class="form-label" style="margin-bottom:4px">MARKET AFFECTED</div>
+          <input id="sd-mkt" class="form-input" style="width:100%;margin-bottom:8px;font-size:12px" value="Poland" placeholder="e.g. Poland, Germany...">
+        </div>
+        <div id="sf-regulatory" style="display:none">
+          <div class="form-label" style="margin-bottom:4px">REGULATION</div>
+          <select id="sr-type" class="form-input" style="width:100%;margin-bottom:8px;padding:7px 10px;font-size:12px">
+            <option>New foreign retailer licensing — 14-month delay</option>
+            <option>Data localisation law — £5M IT overhaul required</option>
+            <option>Environmental compliance — packaging rehaul</option>
+            <option>Import tariffs raised 15% on key product lines</option>
+          </select>
+          <div class="form-label" style="margin-bottom:4px">MARKET AFFECTED</div>
+          <input id="sr-mkt" class="form-input" style="width:100%;margin-bottom:8px;font-size:12px" value="Germany" placeholder="e.g. Germany, Poland...">
+        </div>
+        <div id="sf-custom" style="display:none">
+          <div class="form-label" style="margin-bottom:4px">DESCRIBE THE CHANGE</div>
+          <textarea id="sc-text" class="form-input" style="width:100%;height:72px;resize:none;font-size:12px;margin-bottom:8px" placeholder="e.g. A key investor withdrew £10M from the round..."></textarea>
+        </div>
+
+        <div style="margin-bottom:10px">
+          <div class="form-label" style="margin-bottom:5px">SEVERITY</div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:5px">
+            <button class="surp-sev" data-s="low"    onclick="setSurpSev(this)">🟢 Low</button>
+            <button class="surp-sev active" data-s="medium" onclick="setSurpSev(this)">🟡 Medium</button>
+            <button class="surp-sev" data-s="high"   onclick="setSurpSev(this)">🔴 High</button>
+          </div>
+        </div>
+
         <button class="btn-trigger" onclick="triggerSurprise()">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
           TRIGGER ADAPTATION
         </button>
       </div>
@@ -1182,14 +1268,45 @@ textarea.form-input{resize:none;height:130px;line-height:1.5}
       <button onclick="showNavTab(this,'risk')">Risk Audit</button>
     </nav>
     <div class="topbar-right">
-      <button class="btn-deploy" onclick="showView('landing')">← Back</button>
+      <button class="btn-deploy" onclick="showView('decision')">View Decision →</button>
     </div>
   </header>
-  <div class="analytics-placeholder">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-    <div style="font-size:22px;font-weight:700;color:var(--text2)">Swarm Analytics</div>
-    <div>Run a boardroom session first to see agent performance metrics.</div>
-    <button class="btn-convene" style="margin-top:8px;padding:10px 24px;font-size:13px" onclick="showView('landing')">Initialize Swarm</button>
+  <div style="flex:1;overflow-y:auto;padding:28px 36px">
+    <div style="max-width:1060px;margin:0 auto">
+      <h1 style="font-size:24px;font-weight:800;color:var(--text);letter-spacing:-.02em;margin-bottom:4px">Swarm Analytics</h1>
+      <p style="font-size:13px;color:var(--text3);margin-bottom:22px">Agent performance and contribution breakdown — FreshMart Global session</p>
+      <!-- Summary row -->
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:22px">
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:16px"><div style="font-size:10px;font-weight:700;letter-spacing:.08em;color:var(--text3);margin-bottom:8px">TOTAL AGENTS</div><div style="font-size:28px;font-weight:800;color:var(--text);font-family:var(--mono)">6</div><div style="font-size:11px;color:var(--green);margin-top:4px">All online ●</div></div>
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:16px"><div style="font-size:10px;font-weight:700;letter-spacing:.08em;color:var(--text3);margin-bottom:8px">DEBATE CYCLES</div><div style="font-size:28px;font-weight:800;color:var(--text);font-family:var(--mono)">3</div><div style="font-size:11px;color:var(--text3);margin-top:4px">Max allowed: 3</div></div>
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:16px"><div style="font-size:10px;font-weight:700;letter-spacing:.08em;color:var(--text3);margin-bottom:8px">CHALLENGES RAISED</div><div style="font-size:28px;font-weight:800;color:var(--red);font-family:var(--mono)">2</div><div style="font-size:11px;color:var(--text3);margin-top:4px">1 accepted · 1 partial</div></div>
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:16px"><div style="font-size:10px;font-weight:700;letter-spacing:.08em;color:var(--text3);margin-bottom:8px">STRATEGIES COMPARED</div><div style="font-size:28px;font-weight:800;color:var(--purple3);font-family:var(--mono)">3</div><div style="font-size:11px;color:var(--text3);margin-top:4px">A · B · C evaluated</div></div>
+      </div>
+      <!-- Agent cards -->
+      <div style="font-size:10px;font-weight:700;letter-spacing:.1em;color:var(--text3);text-transform:uppercase;margin-bottom:10px">AGENT CONTRIBUTION BREAKDOWN</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:22px">
+        <div style="background:var(--bg2);border:1px solid var(--border);border-left:3px solid #06b6d4;border-radius:10px;padding:14px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span style="font-size:18px">🔭</span><div><div style="font-size:12px;font-weight:700;color:#06b6d4">Business Research</div><div style="font-size:10px;color:var(--text3)">Market Intelligence</div></div></div><div style="font-size:11px;color:var(--text3);display:flex;flex-direction:column;gap:4px"><div style="display:flex;justify-content:space-between"><span>Contributions</span><span style="color:var(--text);font-weight:600;font-family:var(--mono)">4 msgs</span></div><div style="display:flex;justify-content:space-between"><span>Key finding</span><span style="color:var(--text);font-weight:600">Poland 18-mo window</span></div><div style="display:flex;justify-content:space-between"><span>Impact</span><span style="color:var(--green);font-weight:700">High</span></div></div><div style="height:3px;background:var(--bg3);border-radius:2px;margin-top:8px"><div style="height:3px;background:#06b6d4;border-radius:2px;width:82%"></div></div></div>
+        <div style="background:var(--bg2);border:1px solid var(--border);border-left:3px solid #10b981;border-radius:10px;padding:14px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span style="font-size:18px">💰</span><div><div style="font-size:12px;font-weight:700;color:#10b981">Finance</div><div style="font-size:10px;color:var(--text3)">Financial Modelling</div></div></div><div style="font-size:11px;color:var(--text3);display:flex;flex-direction:column;gap:4px"><div style="display:flex;justify-content:space-between"><span>Contributions</span><span style="color:var(--text);font-weight:600;font-family:var(--mono)">4 msgs</span></div><div style="display:flex;justify-content:space-between"><span>Key output</span><span style="color:var(--text);font-weight:600">IRR 26.4% revised</span></div><div style="display:flex;justify-content:space-between"><span>Challenge status</span><span style="color:var(--amber);font-weight:700">Partially conceded</span></div></div><div style="height:3px;background:var(--bg3);border-radius:2px;margin-top:8px"><div style="height:3px;background:#10b981;border-radius:2px;width:75%"></div></div></div>
+        <div style="background:var(--bg2);border:1px solid var(--border);border-left:3px solid #f59e0b;border-radius:10px;padding:14px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span style="font-size:18px">📣</span><div><div style="font-size:12px;font-weight:700;color:#f59e0b">Marketing & Sales</div><div style="font-size:10px;color:var(--text3)">Go-to-Market</div></div></div><div style="font-size:11px;color:var(--text3);display:flex;flex-direction:column;gap:4px"><div style="display:flex;justify-content:space-between"><span>Contributions</span><span style="color:var(--text);font-weight:600;font-family:var(--mono)">3 msgs</span></div><div style="display:flex;justify-content:space-between"><span>Key output</span><span style="color:var(--text);font-weight:600">Strategy C endorsed</span></div><div style="display:flex;justify-content:space-between"><span>Impact</span><span style="color:var(--green);font-weight:700">High</span></div></div><div style="height:3px;background:var(--bg3);border-radius:2px;margin-top:8px"><div style="height:3px;background:#f59e0b;border-radius:2px;width:68%"></div></div></div>
+        <div style="background:var(--bg2);border:1px solid var(--border);border-left:3px solid #3b82f6;border-radius:10px;padding:14px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span style="font-size:18px">⚙️</span><div><div style="font-size:12px;font-weight:700;color:#3b82f6">Operations / Risk</div><div style="font-size:10px;color:var(--text3)">Ops & Execution</div></div></div><div style="font-size:11px;color:var(--text3);display:flex;flex-direction:column;gap:4px"><div style="display:flex;justify-content:space-between"><span>Contributions</span><span style="color:var(--text);font-weight:600;font-family:var(--mono)">3 msgs</span></div><div style="display:flex;justify-content:space-between"><span>Key output</span><span style="color:var(--text);font-weight:600">Poland 8-mo feasible</span></div><div style="display:flex;justify-content:space-between"><span>Impact</span><span style="color:var(--amber);font-weight:700">Medium</span></div></div><div style="height:3px;background:var(--bg3);border-radius:2px;margin-top:8px"><div style="height:3px;background:#3b82f6;border-radius:2px;width:60%"></div></div></div>
+        <div style="background:var(--bg2);border:1px solid var(--border);border-left:3px solid #ef4444;border-radius:10px;padding:14px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span style="font-size:18px">🗡️</span><div><div style="font-size:12px;font-weight:700;color:#ef4444">Devil's Advocate</div><div style="font-size:10px;color:var(--text3)">Critical Reviewer</div></div></div><div style="font-size:11px;color:var(--text3);display:flex;flex-direction:column;gap:4px"><div style="display:flex;justify-content:space-between"><span>Contributions</span><span style="color:var(--text);font-weight:600;font-family:var(--mono)">3 msgs</span></div><div style="display:flex;justify-content:space-between"><span>Challenges issued</span><span style="color:var(--red);font-weight:700">2 (both actioned)</span></div><div style="display:flex;justify-content:space-between"><span>Impact</span><span style="color:var(--green);font-weight:700">Critical</span></div></div><div style="height:3px;background:var(--bg3);border-radius:2px;margin-top:8px"><div style="height:3px;background:#ef4444;border-radius:2px;width:90%"></div></div></div>
+        <div style="background:var(--bg2);border:1px solid var(--border);border-left:3px solid #8b5cf6;border-radius:10px;padding:14px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span style="font-size:18px">🏛️</span><div><div style="font-size:12px;font-weight:700;color:#8b5cf6">CEO</div><div style="font-size:10px;color:var(--text3)">Final Synthesiser</div></div></div><div style="font-size:11px;color:var(--text3);display:flex;flex-direction:column;gap:4px"><div style="display:flex;justify-content:space-between"><span>Contributions</span><span style="color:var(--text);font-weight:600;font-family:var(--mono)">2 msgs</span></div><div style="display:flex;justify-content:space-between"><span>Decision</span><span style="color:var(--text);font-weight:600">Strategy C — Phased</span></div><div style="display:flex;justify-content:space-between"><span>Consensus</span><span style="color:var(--green);font-weight:700">4/5 agents aligned</span></div></div><div style="height:3px;background:var(--bg3);border-radius:2px;margin-top:8px"><div style="height:3px;background:#8b5cf6;border-radius:2px;width:100%"></div></div></div>
+      </div>
+      <!-- Stage timeline -->
+      <div style="font-size:10px;font-weight:700;letter-spacing:.1em;color:var(--text3);text-transform:uppercase;margin-bottom:10px">BOARDROOM STAGE TIMELINE</div>
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;overflow:hidden">
+        <table style="width:100%;border-collapse:collapse;font-size:12px">
+          <thead><tr style="background:var(--bg3);border-bottom:1px solid var(--border)"><th style="padding:9px 14px;text-align:left;font-size:10px;font-weight:700;letter-spacing:.06em;color:var(--text3)">STAGE</th><th style="padding:9px 14px;text-align:left;font-size:10px;font-weight:700;letter-spacing:.06em;color:var(--text3)">AGENTS ACTIVE</th><th style="padding:9px 14px;text-align:left;font-size:10px;font-weight:700;letter-spacing:.06em;color:var(--text3)">KEY EVENT</th><th style="padding:9px 14px;text-align:right;font-size:10px;font-weight:700;letter-spacing:.06em;color:var(--text3)">STATUS</th></tr></thead>
+          <tbody>
+            <tr style="border-bottom:1px solid var(--border)"><td style="padding:9px 14px;color:var(--text)">① Analyse</td><td style="padding:9px 14px;color:var(--text3)">All 5 dept agents</td><td style="padding:9px 14px;color:var(--text3)">Independent assessments completed</td><td style="padding:9px 14px;text-align:right"><span style="background:rgba(16,185,129,.15);color:#10b981;font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px">COMPLETE</span></td></tr>
+            <tr style="border-bottom:1px solid var(--border)"><td style="padding:9px 14px;color:var(--text)">② Share</td><td style="padding:9px 14px;color:var(--text3)">Research · Finance · Marketing</td><td style="padding:9px 14px;color:var(--text3)">Cross-agent data exchange</td><td style="padding:9px 14px;text-align:right"><span style="background:rgba(16,185,129,.15);color:#10b981;font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px">COMPLETE</span></td></tr>
+            <tr style="border-bottom:1px solid var(--border)"><td style="padding:9px 14px;color:var(--text)">③ Challenge</td><td style="padding:9px 14px;color:var(--text3)">Devil's Advocate · Finance</td><td style="padding:9px 14px;color:var(--red)">2 challenges raised · 1 accepted</td><td style="padding:9px 14px;text-align:right"><span style="background:rgba(16,185,129,.15);color:#10b981;font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px">COMPLETE</span></td></tr>
+            <tr style="border-bottom:1px solid var(--border)"><td style="padding:9px 14px;color:var(--text)">④ Compare</td><td style="padding:9px 14px;color:var(--text3)">Ops/Risk · Marketing</td><td style="padding:9px 14px;color:var(--text3)">Strategies A, B, C evaluated</td><td style="padding:9px 14px;text-align:right"><span style="background:rgba(16,185,129,.15);color:#10b981;font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px">COMPLETE</span></td></tr>
+            <tr><td style="padding:9px 14px;color:var(--text)">⑤ Decide</td><td style="padding:9px 14px;color:var(--text3)">CEO</td><td style="padding:9px 14px;color:var(--purple3)">Strategy C selected · KPIs set</td><td style="padding:9px 14px;text-align:right"><span style="background:rgba(124,58,237,.2);color:var(--purple3);font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px">DECIDED</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -1206,14 +1323,39 @@ textarea.form-input{resize:none;height:130px;line-height:1.5}
       <button class="active">Risk Audit</button>
     </nav>
     <div class="topbar-right">
-      <button class="btn-deploy" onclick="showView('landing')">← Back</button>
+      <button class="btn-deploy" onclick="showView('decision')">View Decision →</button>
     </div>
   </header>
-  <div class="risk-placeholder">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-    <div style="font-size:22px;font-weight:700;color:var(--text2)">Risk Audit</div>
-    <div>Complete a boardroom session to generate the risk audit report.</div>
-    <button class="btn-convene" style="margin-top:8px;padding:10px 24px;font-size:13px" onclick="showView('landing')">Initialize Swarm</button>
+  <div style="flex:1;overflow-y:auto;padding:28px 36px">
+    <div style="max-width:1060px;margin:0 auto">
+      <h1 style="font-size:24px;font-weight:800;color:var(--text);letter-spacing:-.02em;margin-bottom:4px">Risk Audit Report</h1>
+      <p style="font-size:13px;color:var(--text3);margin-bottom:22px">Risk identification and mitigation — generated by Operations/Risk &amp; Devil's Advocate agents</p>
+      <!-- Summary row -->
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:22px">
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:16px"><div style="font-size:10px;font-weight:700;letter-spacing:.08em;color:var(--text3);margin-bottom:8px">TOTAL RISKS</div><div style="font-size:28px;font-weight:800;color:var(--text);font-family:var(--mono)">9</div><div style="font-size:11px;color:var(--text3);margin-top:4px">Identified by swarm</div></div>
+        <div style="background:var(--bg2);border:1px solid rgba(239,68,68,.4);border-radius:10px;padding:16px"><div style="font-size:10px;font-weight:700;letter-spacing:.08em;color:var(--text3);margin-bottom:8px">HIGH RISK</div><div style="font-size:28px;font-weight:800;color:var(--red);font-family:var(--mono)">3</div><div style="font-size:11px;color:var(--text3);margin-top:4px">Require mitigation</div></div>
+        <div style="background:var(--bg2);border:1px solid rgba(245,158,11,.4);border-radius:10px;padding:16px"><div style="font-size:10px;font-weight:700;letter-spacing:.08em;color:var(--text3);margin-bottom:8px">MEDIUM RISK</div><div style="font-size:28px;font-weight:800;color:var(--amber);font-family:var(--mono)">4</div><div style="font-size:11px;color:var(--text3);margin-top:4px">Monitor closely</div></div>
+        <div style="background:var(--bg2);border:1px solid rgba(16,185,129,.4);border-radius:10px;padding:16px"><div style="font-size:10px;font-weight:700;letter-spacing:.08em;color:var(--text3);margin-bottom:8px">LOW RISK</div><div style="font-size:28px;font-weight:800;color:var(--green);font-family:var(--mono)">2</div><div style="font-size:11px;color:var(--text3);margin-top:4px">Accepted</div></div>
+      </div>
+      <!-- Risk table -->
+      <div style="font-size:10px;font-weight:700;letter-spacing:.1em;color:var(--text3);text-transform:uppercase;margin-bottom:10px">RISK REGISTER</div>
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:22px">
+        <table style="width:100%;border-collapse:collapse;font-size:12px">
+          <thead><tr style="background:var(--bg3);border-bottom:1px solid var(--border)"><th style="padding:9px 14px;text-align:left;font-size:10px;font-weight:700;letter-spacing:.06em;color:var(--text3)">#</th><th style="padding:9px 14px;text-align:left;font-size:10px;font-weight:700;letter-spacing:.06em;color:var(--text3)">RISK</th><th style="padding:9px 14px;text-align:left;font-size:10px;font-weight:700;letter-spacing:.06em;color:var(--text3)">CATEGORY</th><th style="padding:9px 14px;text-align:left;font-size:10px;font-weight:700;letter-spacing:.06em;color:var(--text3)">RAISED BY</th><th style="padding:9px 14px;text-align:center;font-size:10px;font-weight:700;letter-spacing:.06em;color:var(--text3)">LIKELIHOOD</th><th style="padding:9px 14px;text-align:center;font-size:10px;font-weight:700;letter-spacing:.06em;color:var(--text3)">RATING</th><th style="padding:9px 14px;text-align:left;font-size:10px;font-weight:700;letter-spacing:.06em;color:var(--text3)">MITIGATION</th></tr></thead>
+          <tbody>
+            <tr style="border-bottom:1px solid var(--border)"><td style="padding:9px 14px;color:var(--text3);font-family:var(--mono)">R-01</td><td style="padding:9px 14px;color:var(--text);font-weight:600">Dual-market cash shortfall</td><td style="padding:9px 14px"><span style="background:rgba(59,130,246,.15);color:#3b82f6;font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px">Financial</span></td><td style="padding:9px 14px;color:#ef4444;font-size:11px">Devil's Advocate</td><td style="padding:9px 14px;text-align:center;color:var(--text)">34%</td><td style="padding:9px 14px;text-align:center"><span style="background:rgba(239,68,68,.2);color:#ef4444;font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px">HIGH</span></td><td style="padding:9px 14px;color:var(--text3);font-size:11px">Phased entry — Poland first</td></tr>
+            <tr style="border-bottom:1px solid var(--border)"><td style="padding:9px 14px;color:var(--text3);font-family:var(--mono)">R-02</td><td style="padding:9px 14px;color:var(--text);font-weight:600">Germany licensing delay (14 mo)</td><td style="padding:9px 14px"><span style="background:rgba(245,158,11,.15);color:#f59e0b;font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px">Regulatory</span></td><td style="padding:9px 14px;color:#ef4444;font-size:11px">Devil's Advocate</td><td style="padding:9px 14px;text-align:center;color:var(--text)">61%</td><td style="padding:9px 14px;text-align:center"><span style="background:rgba(239,68,68,.2);color:#ef4444;font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px">HIGH</span></td><td style="padding:9px 14px;color:var(--text3);font-size:11px">Defer Germany to Year 2; pre-file license Year 1</td></tr>
+            <tr style="border-bottom:1px solid var(--border)"><td style="padding:9px 14px;color:var(--text3);font-family:var(--mono)">R-03</td><td style="padding:9px 14px;color:var(--text);font-weight:600">Lidl closes Poland window early</td><td style="padding:9px 14px"><span style="background:rgba(6,182,212,.15);color:#06b6d4;font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px">Competitive</span></td><td style="padding:9px 14px;color:#06b6d4;font-size:11px">Business Research</td><td style="padding:9px 14px;text-align:center;color:var(--text)">45%</td><td style="padding:9px 14px;text-align:center"><span style="background:rgba(239,68,68,.2);color:#ef4444;font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px">HIGH</span></td><td style="padding:9px 14px;color:var(--text3);font-size:11px">Accelerate Poland timeline; lock sites Q1</td></tr>
+            <tr style="border-bottom:1px solid var(--border)"><td style="padding:9px 14px;color:var(--text3);font-family:var(--mono)">R-04</td><td style="padding:9px 14px;color:var(--text);font-weight:600">FX variance on PLN repatriation</td><td style="padding:9px 14px"><span style="background:rgba(59,130,246,.15);color:#3b82f6;font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px">Financial</span></td><td style="padding:9px 14px;color:#ef4444;font-size:11px">Devil's Advocate</td><td style="padding:9px 14px;text-align:center;color:var(--text)">70%</td><td style="padding:9px 14px;text-align:center"><span style="background:rgba(245,158,11,.2);color:#f59e0b;font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px">MED</span></td><td style="padding:9px 14px;color:var(--text3);font-size:11px">FX hedging — forward contracts</td></tr>
+            <tr style="border-bottom:1px solid var(--border)"><td style="padding:9px 14px;color:var(--text3);font-family:var(--mono)">R-05</td><td style="padding:9px 14px;color:var(--text);font-weight:600">Cold-chain capex overrun</td><td style="padding:9px 14px"><span style="background:rgba(59,130,246,.15);color:#3b82f6;font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px">Operational</span></td><td style="padding:9px 14px;color:#3b82f6;font-size:11px">Operations / Risk</td><td style="padding:9px 14px;text-align:center;color:var(--text)">40%</td><td style="padding:9px 14px;text-align:center"><span style="background:rgba(245,158,11,.2);color:#f59e0b;font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px">MED</span></td><td style="padding:9px 14px;color:var(--text3);font-size:11px">10% contingency on £3.2M estimate</td></tr>
+            <tr style="border-bottom:1px solid var(--border)"><td style="padding:9px 14px;color:var(--text3);font-family:var(--mono)">R-06</td><td style="padding:9px 14px;color:var(--text);font-weight:600">Loyalty app low adoption</td><td style="padding:9px 14px"><span style="background:rgba(245,158,11,.15);color:#f59e0b;font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px">Market</span></td><td style="padding:9px 14px;color:#f59e0b;font-size:11px">Marketing & Sales</td><td style="padding:9px 14px;text-align:center;color:var(--text)">25%</td><td style="padding:9px 14px;text-align:center"><span style="background:rgba(245,158,11,.2);color:#f59e0b;font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px">MED</span></td><td style="padding:9px 14px;color:var(--text3);font-size:11px">Pre-launch digital campaign</td></tr>
+            <tr style="border-bottom:1px solid var(--border)"><td style="padding:9px 14px;color:var(--text3);font-family:var(--mono)">R-07</td><td style="padding:9px 14px;color:var(--text);font-weight:600">Staffing shortfall in Poland</td><td style="padding:9px 14px"><span style="background:rgba(59,130,246,.15);color:#3b82f6;font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px">Operational</span></td><td style="padding:9px 14px;color:#3b82f6;font-size:11px">Operations / Risk</td><td style="padding:9px 14px;text-align:center;color:var(--text)">30%</td><td style="padding:9px 14px;text-align:center"><span style="background:rgba(245,158,11,.2);color:#f59e0b;font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px">MED</span></td><td style="padding:9px 14px;color:var(--text3);font-size:11px">Partner with local agency; hire Month 1</td></tr>
+            <tr style="border-bottom:1px solid var(--border)"><td style="padding:9px 14px;color:var(--text3);font-family:var(--mono)">R-08</td><td style="padding:9px 14px;color:var(--text);font-weight:600">Brand recognition lag</td><td style="padding:9px 14px"><span style="background:rgba(245,158,11,.15);color:#f59e0b;font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px">Market</span></td><td style="padding:9px 14px;color:#f59e0b;font-size:11px">Marketing & Sales</td><td style="padding:9px 14px;text-align:center;color:var(--text)">55%</td><td style="padding:9px 14px;text-align:center"><span style="background:rgba(16,185,129,.15);color:#10b981;font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px">LOW</span></td><td style="padding:9px 14px;color:var(--text3);font-size:11px">6-month pre-launch awareness campaign</td></tr>
+            <tr><td style="padding:9px 14px;color:var(--text3);font-family:var(--mono)">R-09</td><td style="padding:9px 14px;color:var(--text);font-weight:600">Supply SKU gap (Germany)</td><td style="padding:9px 14px"><span style="background:rgba(59,130,246,.15);color:#3b82f6;font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px">Operational</span></td><td style="padding:9px 14px;color:#3b82f6;font-size:11px">Operations / Risk</td><td style="padding:9px 14px;text-align:center;color:var(--text)">40%</td><td style="padding:9px 14px;text-align:center"><span style="background:rgba(16,185,129,.15);color:#10b981;font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px">LOW</span></td><td style="padding:9px 14px;color:var(--text3);font-size:11px">Germany Year 2 — sufficient lead time</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -1244,12 +1386,13 @@ const STATE = {
    AGENT DEFINITIONS
 ════════════════════════════════════════════ */
 const AGENTS_DEF = [
-  { id:'nexus',    name:'Nexus',   codename:'Research Deep-Dive',  dept:'Research & Intelligence',     role:'Data Synthesizer',   icon:'🔬', color:'#06b6d4', abbr:'[RES-AGENT]',  pos:{x:25,  y:28} },
-  { id:'aura',     name:'Aura',    codename:'Finance Alpha',        dept:'Financial Modeling',          role:'Risk Analyst',       icon:'🏛', color:'#10b981', abbr:'[FIN-AGENT]',  pos:{x:72,  y:22} },
-  { id:'echo',     name:'Echo',    codename:'Marketing Synthesizer',dept:'Market Sentiment',            role:'Brand Strategist',   icon:'📡', color:'#f59e0b', abbr:'[MKT-AGENT]',  pos:{x:25,  y:72} },
-  { id:'cog',      name:'Cog',     codename:'Operations Vector',    dept:'Operations',                  role:'Logistics Optimizer',icon:'⚙️', color:'#3b82f6', abbr:'[OPS-AGENT]',  pos:{x:72,  y:75} },
-  { id:'vex',      name:'Vex',     codename:"Devil's Advocate",     dept:"Devil's Advocate",            role:'Stress Tester',      icon:'⚖️', color:'#ef4444', abbr:'[RISK-AGENT]', pos:{x:18,  y:50} },
-  { id:'prime',    name:'Prime',   codename:'CEO Node',             dept:'Chief Executive AI',          role:'Swarm Coordinator',  icon:'🧠', color:'#8b5cf6', abbr:'[CEO-AGENT]',  pos:{x:50,  y:47}, isDirector:true },
+  // Oval boardroom: CEO centre, 5 dept agents evenly spaced around the oval
+  { id:'nexus',    name:'Business Research', codename:'Market Intelligence',   dept:'Research & Intelligence', role:'Market · Customers · Competitors · Risks', icon:'🔭', color:'#06b6d4', abbr:'[BIZ-RESEARCH]', pos:{x:50, y:10} },
+  { id:'aura',     name:'Finance',           codename:'Financial Modelling',   dept:'Finance',                 role:'Costs · Revenue · Profitability · Financial Risk', icon:'💰', color:'#10b981', abbr:'[FINANCE]',      pos:{x:83, y:30} },
+  { id:'echo',     name:'Marketing & Sales', codename:'Go-to-Market',          dept:'Marketing & Sales',       role:'Target Customers · Positioning · Acquisition', icon:'📣', color:'#f59e0b', abbr:'[MKT-SALES]',    pos:{x:78, y:72} },
+  { id:'cog',      name:'Operations / Risk', codename:'Ops & Execution',       dept:'Operations / Risk',       role:'Feasibility · Execution · Operational Risks', icon:'⚙️', color:'#3b82f6', abbr:'[OPS-RISK]',     pos:{x:22, y:72} },
+  { id:'vex',      name:"Devil's Advocate",  codename:'Critical Reviewer',     dept:"Devil's Advocate",        role:"Challenges Agents · Identifies Weaknesses", icon:'🗡️', color:'#ef4444', abbr:'[DEVIL-ADV]',    pos:{x:17, y:30} },
+  { id:'prime',    name:'CEO',               codename:'Chief Executive AI',    dept:'CEO — Final Decision',    role:'Synthesises · Resolves · Decides', icon:'🏛️', color:'#8b5cf6', abbr:'[CEO]',          pos:{x:50, y:44}, isDirector:true },
 ];
 
 /* ════════════════════════════════════════════
@@ -1699,20 +1842,58 @@ function buildDecisionView() {
 }
 
 /* ════════════════════════════════════════════
+   SURPRISE FORM HELPERS
+════════════════════════════════════════════ */
+let _surpType = 'budget';
+let _surpSev  = 'medium';
+
+function setSurpType(btn, t) {
+  _surpType = t;
+  document.querySelectorAll('.surp-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  ['budget','competitor','supply','demand','regulatory','custom'].forEach(k => {
+    const el = document.getElementById('sf-' + k);
+    if (el) el.style.display = k === t ? '' : 'none';
+  });
+}
+
+function setSurpSev(btn) {
+  _surpSev = btn.dataset.s;
+  document.querySelectorAll('.surp-sev').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function buildSurpText() {
+  const s = {low:'Minor', medium:'Significant', high:'Critical'}[_surpSev];
+  switch (_surpType) {
+    case 'budget':
+      return `${s} budget cut of −${document.getElementById('sb-pct')?.value||20}%: ${document.getElementById('sb-reason')?.value||''}`;
+    case 'competitor':
+      return `${s} competitor threat — ${document.getElementById('sc-name')?.value||'Competitor'} has ${document.getElementById('sc-action')?.value||'entered the market'}`;
+    case 'supply':
+      return `${s} supply chain disruption: ${document.getElementById('ss-type')?.value||''}. Extra cost: £${document.getElementById('ss-cost')?.value||'8'}M`;
+    case 'demand':
+      return `${s} demand shift in ${document.getElementById('sd-mkt')?.value||'market'}: ${document.getElementById('sd-dir')?.value||''}`;
+    case 'regulatory':
+      return `${s} regulatory change in ${document.getElementById('sr-mkt')?.value||'market'}: ${document.getElementById('sr-type')?.value||''}`;
+    case 'custom':
+      return document.getElementById('sc-text')?.value?.trim() || 'Custom surprise event.';
+    default: return 'Surprise event injected.';
+  }
+}
+
+/* ════════════════════════════════════════════
    SURPRISE ROUND
 ════════════════════════════════════════════ */
 function triggerSurprise() {
-  const text = document.getElementById('surprise-input').value.trim();
-  if (!text) { showToast('Please describe the surprise event first.', 'error'); return; }
+  const text = buildSurpText();
+  if (!text) { showToast('Please fill in the surprise details.', 'error'); return; }
   STATE.surpriseTriggered = true;
   showToast('Surprise injected — re-running affected agents...', 'info');
-  // Switch to boardroom for re-run
   showView('boardroom');
   updateStageUI('analyze');
   document.getElementById('round-badge').textContent = 'SURPRISE · ADAPTATION';
-  // Add surprise notice to transcript
-  addTranscriptLine('prime', `⚡ SURPRISE EVENT INJECTED: "${text}"`, 'surprise');
-  // Run surprise script
+  addTranscriptLine('prime', `⚡ SURPRISE [${_surpType.toUpperCase()}/${_surpSev.toUpperCase()}]: "${text}"`, 'surprise');
   let idx = 0;
   function next() {
     if (idx >= SURPRISE_SCRIPT.length) {
