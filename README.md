@@ -39,7 +39,7 @@ cd AgentZero
 
 **Step 2 - Install dependencies:**
 ```bash
-pip install flask flask-cors langgraph langchain-core langchain-google-genai python-dotenv
+pip install -r requirements.txt
 ```
 
 **Step 3 - Create .env file in project root:**
@@ -78,10 +78,10 @@ python agents/swarm.py "Your business problem" "Your surprise event"
 | Agent Framework | LangGraph 1.x - StateGraph with fan-out/fan-in topology |
 | LLM Integration | LangChain Google GenAI (langchain-google-genai) |
 | Backend | Flask + Flask-CORS |
-| Frontend | Vanilla HTML/CSS/JS - no framework |
-| Voice | Web Speech API (browser-native, no external service) |
+| Frontend | Vanilla HTML/CSS/JS - No framework |
+| Voice | ElevenLabs API + Web Speech API fallback |
 | Environment | python-dotenv |
-| External APIs | Google Generative Language API only |
+| External APIs | Google Generative Language API, ElevenLabs API |
 
 ---
 
@@ -89,27 +89,27 @@ python agents/swarm.py "Your business problem" "Your surprise event"
 
 ```
 START
-  └── Research Agent
-        ├── Finance Agent ──────────┐
-        └── Marketing Agent ────────┴── Challenge Agent
-                                              ├── Operations Agent ──┐
-                                              └── Devil's Advocate ──┴── CEO Agent
-                                                                            └── Surprise Agent (if surprise input)
-                                                                                  └── END
+  └── Research Agent (NEXUS)
+        ├── Finance & Treasury Agent (AURA) ────────┐
+        └── Marketing & Sales Agent (ECHO) ─────────┴── Conflict Reviewer (Challenge Node)
+                                                              └── Credit Risk Agent (VEX)
+                                                                    └── Compliance Agent (COG)
+                                                                          └── CEO Agent (PRIME)
+                                                                                └── Adaptive Surprise Agent
+                                                                                      └── END
 ```
 
-Two fan-outs and two fan-ins. Each agent is a separate LangGraph node with its own LLM instance.
+Structured boardroom execution: Each specialist agent runs as an isolated LangGraph node with its own domain prompt and context injection.
 
 ---
 
 ## Known Limitations and Failure Handling
 
-1. **Rate limits:** Each swarm run makes 7-8 Gemini API calls. Free tier allows 15 RPM. If rate limited, wait 60 seconds and retry.
+1. **Rate limits:** Multi-tier Gemini API key pool fallback with automatic failover across primary and backup keys.
 2. **Agent failure fallback:** Every agent wraps its LLM call in try/except. If one agent fails, it returns a fallback message and the graph continues - the CEO agent will note the missing input.
-3. **Surprise round re-runs full swarm:** The current implementation re-runs all agents when a surprise is injected. A future version would selectively re-run only affected agents.
-4. **Sequential fan-out:** LangGraph runs parallel fan-out nodes sequentially on a single thread in the default sync executor. True async parallelism requires async node definitions - not implemented in this version.
-5. **Context window:** Very long business problems (over 1,000 words) may cause agent outputs to truncate. Keep problem statements under 500 words for best results.
-6. **TTS availability:** Voice narration uses the browser Web Speech API. Quality depends on available system voices and may be unavailable on some browsers or OS configurations.
+3. **Surprise round:** Adaptive CEO node re-evaluates and pivots corporate strategy upon injected market shocks.
+4. **Context window:** Optimized structured prompts with numerical constraint verification prevent truncation.
+5. **TTS availability:** ElevenLabs voice synthesis with browser-native Web Speech API fallback.
 
 ---
 
@@ -121,8 +121,9 @@ Two fan-outs and two fan-ins. Each agent is a separate LangGraph node with its o
 | LangChain Google GenAI | Open-source, LangChain Inc. | Gemini API integration |
 | Flask | Open-source, Pallets Projects | Web server |
 | Gemini API | Google | LLM inference for all agents |
-| Web Speech API | Browser-native W3C standard | TTS voice narration |
-| JetBrains Mono font | Open-source, JetBrains | UI typography |
+| ElevenLabs API | ElevenLabs | Voice synthesis for boardroom agents |
+| Web Speech API | Browser-native W3C standard | TTS voice narration fallback |
+| jsPDF | Open-source, Parallax | Client-side dynamic PDF report generation |
 
 All agent logic, system prompts, graph topology, state design, frontend UI, and boardroom protocol implementation are original work created by Team Agent Zero for this hackathon.
 
@@ -133,13 +134,23 @@ All agent logic, system prompts, graph topology, state design, frontend UI, and 
 ```text
 AgentZero/
 ├── agents/
-│   └── swarm.py          # LangGraph swarm - all 8 agent nodes
+│   └── swarm.py              # LangGraph swarm - all 8 agent nodes
+├── ai_boardroom/
+│   ├── templates/
+│   │   └── index.html        # Interactive AI Boardroom UI & PDF Report Generator
+│   ├── core/
+│   │   └── config.py         # Swarm configurations & presets
+│   └── open_app.py           # Quick-launch browser opener
 ├── frontend/
-│   └── index.html        # Single-page web app
-├── app.py                # Flask server + API routes
-├── .env                  # API keys (not committed)
-├── README.md             # This file
-└── requirements.txt      # Dependencies
+│   └── index.html            # Terminal UI alternative
+├── data/
+│   └── testcases_report.json # Theme A comprehensive 5-testcase evaluation data
+├── app.py                    # Flask server + API routes (/api/run, /api/tts, /api/testcases-report)
+├── run_all_tc.py             # Test harness to execute all 5 Theme A test cases
+├── .env.example              # Environment variables template (no keys committed)
+├── .gitignore                # Git ignore rules (.env protected)
+├── README.md                 # Project documentation
+└── requirements.txt          # Python dependencies
 ```
 
 ---

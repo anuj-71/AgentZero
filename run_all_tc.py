@@ -5,7 +5,7 @@ from agents.swarm import run_swarm
 TESTCASES = [
     {
         "id": "TC1",
-        "title": "TC1 — BASELINE: LAUNCH THE SMALL-BUSINESS LOAN",
+        "title": "TC1: BASELINE - LAUNCH THE SMALL-BUSINESS LOAN",
         "problem": (
             "FinNova Capital has INR 30 crore available for a one-year small-business lending pilot and INR 60 lakh for customer acquisition. "
             "It can initially approve no more than 700 loans. Common costs: Cost of funds 10% per year, Servicing and collections cost 1.5% of principal per year, "
@@ -18,7 +18,7 @@ TESTCASES = [
     },
     {
         "id": "TC2",
-        "title": "TC2 — SURPRISE: CREDIT-RISK SPIKE",
+        "title": "TC2: SURPRISE - CREDIT-RISK SPIKE",
         "problem": (
             "FinNova Capital is running a one-year INR 27 crore pilot with 600 planned loans (Retail 45%, Service SMEs 35%, Small manufacturers 20%, 17% interest, 10% cost of funds, 1.5% servicing). "
             "New condition: Retail expected default rises to 8%, Service SME expected default rises to 5%, Small manufacturer expected default rises to 7%. "
@@ -30,7 +30,7 @@ TESTCASES = [
     },
     {
         "id": "TC3",
-        "title": "TC3 — SURPRISE: MARKETING BUDGET CUT",
+        "title": "TC3: SURPRISE - MARKETING BUDGET CUT",
         "problem": (
             "FinNova Capital will launch in eight weeks. Customer acquisition budget reduced from INR 60 lakh to INR 36 lakh. "
             "Setup requires INR 18 lakh, leaving INR 18 lakh for marketing. Target: >= 400 qualified applications, >= 160 funded loans. "
@@ -43,7 +43,7 @@ TESTCASES = [
     },
     {
         "id": "TC4",
-        "title": "TC4 — SURPRISE: STRICTER VERIFICATION REQUIREMENTS",
+        "title": "TC4: SURPRISE - STRICTER VERIFICATION REQUIREMENTS",
         "problem": (
             "FinNova Capital processes 500 applications/week, approves 35% (175/week), 12-minute onboarding, uses manual verification for 10% (17.5/week), "
             "employs 8 reviewers (each does 4 reviews/day, 5 days/week = 160 reviews/week capacity). "
@@ -57,7 +57,7 @@ TESTCASES = [
     },
     {
         "id": "TC5",
-        "title": "TC5 — LIVE TEST: FUNDING-COST AND FRAUD SHOCK",
+        "title": "TC5: LIVE TEST - FUNDING-COST AND FRAUD SHOCK",
         "problem": (
             "FinNova Capital approved plan to deploy INR 24 crore across 500 loans (17.5% interest, 4.5% default, 10% cost of funds, 1.5% servicing, 50% retail, 2% suspected fraud). "
             "Live shock: Cost of funds rises to 13%, suspected retail fraud rises to 7%. "

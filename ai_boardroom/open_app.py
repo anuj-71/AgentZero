@@ -1,6 +1,6 @@
 """
 Quick-launch: opens the Agentic Swarm frontend directly in the browser.
-No server needed — the frontend is fully self-contained HTML.
+No server needed: the frontend is fully self-contained HTML.
 """
 import os, webbrowser, pathlib
 

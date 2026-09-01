@@ -11,7 +11,7 @@ OPENAI_MODEL   = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
 FLASK_SECRET   = os.getenv("FLASK_SECRET_KEY", "agentic-swarm-secret-2026")
 MAX_DEBATE_CYCLES = 3
 
-# Agent voice profiles – used by the TTS engine
+# Agent voice profiles - used by the TTS engine
 # pitch/rate are hints stored here; actual synthesis happens in voice.py
 AGENT_VOICES = {
     "Research":    {"voice_id": 0, "rate": 155, "pitch": "medium",    "color": "#6366f1"},
@@ -117,7 +117,7 @@ CHALLENGES = [
             "ARR": "$8M",
             "customers": "15,000 SMEs",
             "churn": "8% annually",
-            "investment_budget": "$3M–$5M",
+            "investment_budget": "$3M-$5M",
             "target": "40% ARR growth in 18 months",
             "options": ["Build proprietary AI", "License AI platform", "Acquire AI startup"],
         },
@@ -136,7 +136,7 @@ CHALLENGES = [
                 "title": "Investor Pulls $2M from Round",
                 "description": (
                     "A key investor has withdrawn $2M from the planned investment round, "
-                    "reducing available capital to $1M–$3M. The acquisition option is now "
+                    "reducing available capital to $1M-$3M. The acquisition option is now "
                     "out of reach. Strategy must be revised within the new budget constraint."
                 ),
             },

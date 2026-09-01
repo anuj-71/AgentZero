@@ -8,21 +8,21 @@ app = Flask(__name__, static_folder="frontend", static_url_path="")
 CORS(app)
 
 VOICE_CONFIG = {
-    "nexus": {"primary": os.getenv("RESEARCH_VOICE_ID", "U2VUL94XlY3UYSlQvsxF"), "fallback": "Xb7hH8MSUJpSbSDYk0k2"},
-    "research": {"primary": os.getenv("RESEARCH_VOICE_ID", "U2VUL94XlY3UYSlQvsxF"), "fallback": "Xb7hH8MSUJpSbSDYk0k2"},
-    "aura": {"primary": os.getenv("FINANCE_VOICE_ID", "tJhWDBTSAveEOucKUtO0"), "fallback": "EXAVITQu4vr4xnSDxMaL"},
-    "finance": {"primary": os.getenv("FINANCE_VOICE_ID", "tJhWDBTSAveEOucKUtO0"), "fallback": "EXAVITQu4vr4xnSDxMaL"},
-    "echo": {"primary": os.getenv("MARKETING_VOICE_ID", "IwFADcBfc7Yo8KGhxTR5"), "fallback": "FGY2WhTYpPnrIDTdsKH5"},
-    "marketing": {"primary": os.getenv("MARKETING_VOICE_ID", "IwFADcBfc7Yo8KGhxTR5"), "fallback": "FGY2WhTYpPnrIDTdsKH5"},
-    "cog": {"primary": os.getenv("OPERATIONS_VOICE_ID", "kF8twSM38uBXVCgMToG0"), "fallback": "IKne3meq5aSn9XLyUdCD"},
-    "operations": {"primary": os.getenv("OPERATIONS_VOICE_ID", "kF8twSM38uBXVCgMToG0"), "fallback": "IKne3meq5aSn9XLyUdCD"},
-    "compliance": {"primary": os.getenv("OPERATIONS_VOICE_ID", "kF8twSM38uBXVCgMToG0"), "fallback": "IKne3meq5aSn9XLyUdCD"},
-    "vex": {"primary": os.getenv("DEVIL_VOICE_ID", "J6QyEgpWnUhfFeU38ghG"), "fallback": "N2lVS1w4EtoT3dr4eOWO"},
-    "credit": {"primary": os.getenv("DEVIL_VOICE_ID", "J6QyEgpWnUhfFeU38ghG"), "fallback": "N2lVS1w4EtoT3dr4eOWO"},
-    "credit_risk": {"primary": os.getenv("DEVIL_VOICE_ID", "J6QyEgpWnUhfFeU38ghG"), "fallback": "N2lVS1w4EtoT3dr4eOWO"},
-    "devils_advocate": {"primary": os.getenv("DEVIL_VOICE_ID", "J6QyEgpWnUhfFeU38ghG"), "fallback": "N2lVS1w4EtoT3dr4eOWO"},
-    "prime": {"primary": os.getenv("CEO_VOICE_ID", "u8GDilEiJPUbRk87Lcqs"), "fallback": "JBFqnCBsd6RMkjVDRZzb"},
-    "ceo": {"primary": os.getenv("CEO_VOICE_ID", "u8GDilEiJPUbRk87Lcqs"), "fallback": "JBFqnCBsd6RMkjVDRZzb"},
+    "nexus": {"primary": os.getenv("RESEARCH_VOICE_ID", "Xb7hH8MSUJpSbSDYk0k2"), "fallback": "Xb7hH8MSUJpSbSDYk0k2"},
+    "research": {"primary": os.getenv("RESEARCH_VOICE_ID", "Xb7hH8MSUJpSbSDYk0k2"), "fallback": "Xb7hH8MSUJpSbSDYk0k2"},
+    "aura": {"primary": os.getenv("FINANCE_VOICE_ID", "EXAVITQu4vr4xnSDxMaL"), "fallback": "EXAVITQu4vr4xnSDxMaL"},
+    "finance": {"primary": os.getenv("FINANCE_VOICE_ID", "EXAVITQu4vr4xnSDxMaL"), "fallback": "EXAVITQu4vr4xnSDxMaL"},
+    "echo": {"primary": os.getenv("MARKETING_VOICE_ID", "FGY2WhTYpPnrIDTdsKH5"), "fallback": "FGY2WhTYpPnrIDTdsKH5"},
+    "marketing": {"primary": os.getenv("MARKETING_VOICE_ID", "FGY2WhTYpPnrIDTdsKH5"), "fallback": "FGY2WhTYpPnrIDTdsKH5"},
+    "cog": {"primary": os.getenv("OPERATIONS_VOICE_ID", "IKne3meq5aSn9XLyUdCD"), "fallback": "IKne3meq5aSn9XLyUdCD"},
+    "operations": {"primary": os.getenv("OPERATIONS_VOICE_ID", "IKne3meq5aSn9XLyUdCD"), "fallback": "IKne3meq5aSn9XLyUdCD"},
+    "compliance": {"primary": os.getenv("OPERATIONS_VOICE_ID", "IKne3meq5aSn9XLyUdCD"), "fallback": "IKne3meq5aSn9XLyUdCD"},
+    "vex": {"primary": os.getenv("DEVIL_VOICE_ID", "N2lVS1w4EtoT3dr4eOWO"), "fallback": "N2lVS1w4EtoT3dr4eOWO"},
+    "credit": {"primary": os.getenv("DEVIL_VOICE_ID", "N2lVS1w4EtoT3dr4eOWO"), "fallback": "N2lVS1w4EtoT3dr4eOWO"},
+    "credit_risk": {"primary": os.getenv("DEVIL_VOICE_ID", "N2lVS1w4EtoT3dr4eOWO"), "fallback": "N2lVS1w4EtoT3dr4eOWO"},
+    "devils_advocate": {"primary": os.getenv("DEVIL_VOICE_ID", "N2lVS1w4EtoT3dr4eOWO"), "fallback": "N2lVS1w4EtoT3dr4eOWO"},
+    "prime": {"primary": os.getenv("CEO_VOICE_ID", "JBFqnCBsd6RMkjVDRZzb"), "fallback": "JBFqnCBsd6RMkjVDRZzb"},
+    "ceo": {"primary": os.getenv("CEO_VOICE_ID", "JBFqnCBsd6RMkjVDRZzb"), "fallback": "JBFqnCBsd6RMkjVDRZzb"},
 }
 
 
@@ -44,12 +44,10 @@ def tts():
     text = data.get("text", "").strip()
     agent = data.get("agent", "prime").lower()
     eleven_key = os.getenv("ELEVENLABS_API_KEY", "")
-    model_id = os.getenv("ELEVENLABS_MODEL_ID", "eleven_flash_v2_5")
-
     if not text or not eleven_key:
         return jsonify({"error": "Missing text or ELEVENLABS_API_KEY"}), 400
 
-    cfg = VOICE_CONFIG.get(agent, {"primary": os.getenv("CEO_VOICE_ID", "u8GDilEiJPUbRk87Lcqs"), "fallback": "JBFqnCBsd6RMkjVDRZzb"})
+    cfg = VOICE_CONFIG.get(agent, {"primary": os.getenv("CEO_VOICE_ID", "JBFqnCBsd6RMkjVDRZzb"), "fallback": "JBFqnCBsd6RMkjVDRZzb"})
     primary_voice = cfg["primary"]
     fallback_voice = cfg["fallback"]
 
