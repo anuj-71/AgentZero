@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WHITECODER // AGENTIC SWARM</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: #0a0a0a;
+      color: #e0e0e0;
+      font-family: 'JetBrains Mono', monospace;
+      min-height: 100vh;
+      display: flex;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 260px;
+      min-width: 260px;
+      background-color: #080808;
+      border-right: 1px solid #1a1a1a;
+      display: flex;
+      flex-direction: column;
+      padding: 24px 0;
+    }
+
+    .brand-box {
+      padding: 0 20px 24px 20px;
+      border-bottom: 1px solid #161616;
+    }
+
+    .brand-title {
+      color: #00ff88;
+      font-size: 15px;
+      font-weight: 800;
+      letter-spacing: 1px;
+    }
+
+    .brand-sub {
+      color: #555;
+      font-size: 11px;
+      margin-top: 4px;
+    }
+
+    .nav-links {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      padding: 20px 12px;
+      list-style: none;
+      flex: 1;
+    }
+
+    .nav-link {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 12px;
+      color: #888;
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 500;
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .nav-link:hover {
+      color: #00ff88;
+      background-color: #0f0f0f;
+      border-color: #1a1a1a;
+    }
+
+    .nav-link.active {
+      color: #000;
+      background-color: #00ff88;
+      border-color: #00ff88;
+      font-weight: 700;
+    }
+
+    .nav-num {
+      font-size: 10px;
+      opacity: 0.8;
+    }
+
+    .sidebar-footer {
+      padding: 16px 20px;
+      border-top: 1px solid #161616;
+      color: #444;
+      font-size: 10px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    /* Main Container */
+    .main-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 32px 40px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .page-section {
+      display: none;
+      flex-direction: column;
+      gap: 20px;
+      max-width: 1100px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    .page-section.active {
+      display: flex;
+    }
+
+    .section-header {
+      border-bottom: 1px solid #1c1c1c;
+      padding-bottom: 16px;
+      margin-bottom: 4px;
+    }
+
+    .section-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: #ffffff;
+      letter-spacing: 0.5px;
+    }
+
+    .section-desc {
+      color: #666;
+      font-size: 12px;
+      margin-top: 4px;
+    }
+
+    /* Form & Input Elements */
+    textarea {
+      width: 100%;
+      background-color: #080808;
+      border: 1px solid #222;
+      color: #00ff88;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      padding: 16px;
+      outline: none;
+      resize: vertical;
+      line-height: 1.6;
+    }
+
+    textarea:focus {
+      border-color: #00ff88;
+    }
+
+    textarea::placeholder {
+      color: #444;
+    }
+
+    .btn {
+      background-color: #00ff88;
+      color: #000000;
+      border: none;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      font-weight: 800;
+      padding: 14px 28px;
+      cursor: pointer;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      transition: all 0.15s ease;
+      width: fit-content;
+    }
+
+    .btn:hover:not(:disabled) {
+      background-color: #1aff95;
+      box-shadow: 0 0 15px rgba(0, 255, 136, 0.3);
+    }
+
+    .btn:disabled {
+      background-color: #1c1c1c;
+      color: #555;
+      cursor: not-allowed;
+      border: 1px solid #2a2a2a;
+    }
+
+    /* Status Bar */
+    .status-bar {
+      background-color: #060606;
+      border: 1px solid #1a1a1a;
+      padding: 12px 16px;
+      font-size: 12px;
+      color: #888;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      background-color: #444;
+      display: inline-block;
+    }
+
+    .status-bar.active .status-dot {
+      background-color: #00ff88;
+      box-shadow: 0 0 8px #00ff88;
+    }
+
+    .cursor-blink {
+      display: inline-block;
+      width: 8px;
+      height: 14px;
+      background-color: #00ff88;
+      vertical-align: middle;
+      animation: blink 1s infinite;
+    }
+
+    @keyframes blink {
+      0%, 49% { opacity: 1; }
+      50%, 100% { opacity: 0; }
+    }
+
+    /* Agent Badges List */
+    .agent-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .agent-badge {
+      background-color: #0d0d0d;
+      border: 1px solid #222;
+      padding: 8px 12px;
+      font-size: 11px;
+      color: #aaa;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .agent-badge strong {
+      color: #fff;
+    }
+
+    .badge-icon {
+      color: #00ff88;
+    }
+
+    /* Page 2: Swarm Analysis Cards */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    .agent-card {
+      background-color: #080808;
+      border: 1px solid #222;
+      display: flex;
+      flex-direction: column;
+      min-height: 280px;
+    }
+
+    .agent-card-header {
+      padding: 12px 16px;
+      background-color: #0d0d0d;
+      border-bottom: 1px solid #1a1a1a;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .agent-tag {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .tag-research { background-color: rgba(0, 255, 136, 0.1); color: #00ff88; border: 1px solid #00ff88; }
+    .tag-finance { background-color: rgba(56, 189, 248, 0.1); color: #38bdf8; border: 1px solid #38bdf8; }
+    .tag-marketing { background-color: rgba(192, 132, 252, 0.1); color: #c084fc; border: 1px solid #c084fc; }
+
+    .agent-card-content {
+      padding: 16px;
+      font-size: 12px;
+      color: #ccc;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      flex: 1;
+      overflow-y: auto;
+      max-height: 380px;
+    }
+
+    .card-empty {
+      color: #444;
+      font-style: italic;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      min-height: 180px;
+    }
+
+    /* Challenge Card */
+    .challenge-card {
+      background-color: #080808;
+      border: 1px solid #ff4444;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .challenge-card-header {
+      background-color: #140808;
+      border-bottom: 1px solid #ff4444;
+      padding: 12px 16px;
+      color: #ff5555;
+      font-weight: 700;
+      font-size: 13px;
+      letter-spacing: 0.5px;
+    }
+
+    .challenge-card-content {
+      padding: 18px;
+      font-size: 12px;
+      color: #ddd;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    /* Page 3: Boardroom CEO Decision */
+    .ceo-container {
+      background-color: #080808;
+      border: 1px solid #222;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .ceo-section-block {
+      border-left: 2px solid #333;
+      padding-left: 16px;
+      margin-bottom: 4px;
+    }
+
+    .ceo-section-block.decision { border-left-color: #00ff88; }
+    .ceo-section-block.evidence { border-left-color: #38bdf8; }
+    .ceo-section-block.rejected { border-left-color: #ff5555; }
+    .ceo-section-block.risks { border-left-color: #facc15; }
+    .ceo-section-block.implementation { border-left-color: #ffffff; }
+    .ceo-section-block.kpis-block { border-left-color: #00ff88; }
+
+    .ceo-label {
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 1px;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .lbl-decision { color: #00ff88; }
+    .lbl-evidence { color: #38bdf8; }
+    .lbl-rejected { color: #ff5555; }
+    .lbl-risks { color: #facc15; }
+    .lbl-implementation { color: #ffffff; }
+    .lbl-kpis { color: #00ff88; }
+
+    .ceo-text {
+      color: #ccc;
+      font-size: 13px;
+      line-height: 1.6;
+      white-space: pre-wrap;
+    }
+
+    /* Pulsing KPI container */
+    .kpi-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .kpi-pill {
+      background-color: #05150d;
+      border: 1px solid #00ff88;
+      color: #00ff88;
+      padding: 10px 16px;
+      font-size: 12px;
+      font-weight: 600;
+      animation: pulse-border 2.5s infinite ease-in-out;
+    }
+
+    @keyframes pulse-border {
+      0%, 100% { box-shadow: 0 0 3px rgba(0, 255, 136, 0.2); }
+      50% { box-shadow: 0 0 12px rgba(0, 255, 136, 0.6); }
+    }
+
+    /* Page 4: Surprise Round */
+    .surprise-box {
+      background-color: #080808;
+      border: 1px solid #222;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .revised-display {
+      background-color: #050505;
+      border: 1px solid #333;
+      padding: 20px;
+      color: #eee;
+      font-size: 13px;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      min-height: 140px;
+    }
+
+    /* Page 5: Terminal Trace Log */
+    .terminal-container {
+      background-color: #040404;
+      border: 1px solid #1c1c1c;
+      padding: 20px;
+      min-height: 480px;
+      max-height: 600px;
+      overflow-y: auto;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .log-line {
+      display: flex;
+      gap: 12px;
+      line-height: 1.6;
+    }
+
+    .log-ts {
+      color: #444;
+      user-select: none;
+    }
+
+    .log-content {
+      color: #bbb;
+    }
+
+    .log-research { color: #00ff88; }
+    .log-finance { color: #38bdf8; }
+    .log-marketing { color: #c084fc; }
+    .log-challenge { color: #ff5555; }
+    .log-ceo { color: #50fa7b; font-weight: 700; }
+    .log-surprise { color: #ffd600; font-weight: 700; }
+  </style>
+</head>
+<body>
+
+  <!-- Left Sidebar -->
+  <aside class="sidebar">
+    <div class="brand-box">
+      <div class="brand-title">WHITECODER //</div>
+      <div class="brand-sub">AGENTIC SWARM v1.0</div>
+    </div>
+
+    <ul class="nav-links">
+      <li>
+        <a class="nav-link active" data-page="page1" id="nav_page1">
+          <span class="nav-num">01</span>
+          <span>MISSION BRIEF</span>
+        </a>
+      </li>
+      <li>
+        <a class="nav-link" data-page="page2" id="nav_page2">
+          <span class="nav-num">02</span>
+          <span>SWARM ANALYSIS</span>
+        </a>
+      </li>
+      <li>
+        <a class="nav-link" data-page="page3" id="nav_page3">
+          <span class="nav-num">03</span>
+          <span>BOARDROOM</span>
+        </a>
+      </li>
+      <li>
+        <a class="nav-link" data-page="page4" id="nav_page4">
+          <span class="nav-num">04</span>
+          <span>SURPRISE ROUND</span>
+        </a>
+      </li>
+      <li>
+        <a class="nav-link" data-page="page5" id="nav_page5">
+          <span class="nav-num">05</span>
+          <span>EXECUTION LOG</span>
+        </a>
+      </li>
+    </ul>
+
+    <div class="sidebar-footer">
+      <span>LANGGRAPH 1.2</span>
+      <span>GEMINI 3.1 FLASH LITE</span>
+    </div>
+  </aside>
+
+  <!-- Main Content Areas -->
+  <main class="main-content">
+
+    <!-- PAGE 1: MISSION BRIEF -->
+    <section class="page-section active" id="page1">
+      <div class="section-header">
+        <h1 class="section-title">WHITECODER // AGENTIC SWARM</h1>
+        <p class="section-desc">Business AI Decision System - 4 Agents. 5 Stages. One CEO Decision.</p>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 14px;">
+        <label for="business_problem" style="color: #888; font-size: 11px; letter-spacing: 0.5px; text-transform: uppercase;">
+          Mission Objective / Business Problem Statement:
+        </label>
+        <textarea id="business_problem" rows="6" placeholder="Enter business problem statement... (e.g. A retail company wants to launch an online grocery delivery service)"></textarea>
+
+        <div style="display: flex; align-items: center; gap: 16px;">
+          <button class="btn" id="run_swarm_btn">
+            <span>DEPLOY SWARM</span>
+            <span>&rarr;</span>
+          </button>
+        </div>
+
+        <div class="status-bar" id="status_bar">
+          <span class="status-dot"></span>
+          <span id="status_text">AWAITING MISSION INPUT</span>
+          <span class="cursor-blink" id="status_cursor" style="display: none;"></span>
+        </div>
+
+        <div class="agent-badges">
+          <div class="agent-badge">
+            <span class="badge-icon">&#9632;</span>
+            <span><strong>RESEARCH AGENT</strong>: Market, Competition & Opportunities</span>
+          </div>
+          <div class="agent-badge">
+            <span class="badge-icon">&#9632;</span>
+            <span><strong>FINANCE AGENT</strong>: Unit Economics & Break-Even Feasibility</span>
+          </div>
+          <div class="agent-badge">
+            <span class="badge-icon">&#9632;</span>
+            <span><strong>MARKETING AGENT</strong>: Positioning & Acquisition Channels</span>
+          </div>
+          <div class="agent-badge">
+            <span class="badge-icon">&#9632;</span>
+            <span><strong>CHALLENGE AGENT</strong>: Critical Review & Conflict Resolution</span>
+          </div>
+          <div class="agent-badge">
+            <span class="badge-icon">&#9632;</span>
+            <span><strong>CEO AGENT</strong>: Synthesis, Directives & KPI Governance</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PAGE 2: SWARM ANALYSIS -->
+    <section class="page-section" id="page2">
+      <div class="section-header">
+        <h2 class="section-title">SWARM ANALYSIS // DEPARTMENT DEEP DIVE</h2>
+        <p class="section-desc">Parallel intelligence synthesis from specialized agent units.</p>
+      </div>
+
+      <div class="cards-grid">
+        <!-- Research Card -->
+        <div class="agent-card" id="research_card">
+          <div class="agent-card-header">
+            <span class="agent-tag tag-research">RESEARCH AGENT</span>
+            <span style="color: #555; font-size: 10px;">NODE 01</span>
+          </div>
+          <div class="agent-card-content" id="research_card_content">
+            <div class="card-empty">Agent standing by...</div>
+          </div>
+        </div>
+
+        <!-- Finance Card -->
+        <div class="agent-card" id="finance_card">
+          <div class="agent-card-header">
+            <span class="agent-tag tag-finance">FINANCE AGENT</span>
+            <span style="color: #555; font-size: 10px;">NODE 02</span>
+          </div>
+          <div class="agent-card-content" id="finance_card_content">
+            <div class="card-empty">Agent standing by...</div>
+          </div>
+        </div>
+
+        <!-- Marketing Card -->
+        <div class="agent-card" id="marketing_card">
+          <div class="agent-card-header">
+            <span class="agent-tag tag-marketing">MARKETING AGENT</span>
+            <span style="color: #555; font-size: 10px;">NODE 03</span>
+          </div>
+          <div class="agent-card-content" id="marketing_card_content">
+            <div class="card-empty">Agent standing by...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Challenge Card -->
+      <div class="challenge-card" id="challenge_card">
+        <div class="challenge-card-header">
+          &#9889; AGENT DISAGREEMENT // CHALLENGE LOG
+        </div>
+        <div class="challenge-card-content" id="challenge_card_content">
+          <div class="card-empty">Agent standing by...</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PAGE 3: BOARDROOM -->
+    <section class="page-section" id="page3">
+      <div class="section-header">
+        <h2 class="section-title">BOARDROOM // CEO EXECUTIVE DIRECTIVE</h2>
+        <p class="section-desc">Unified executive mandate synthesized from agent consensus and challenge resolution.</p>
+      </div>
+
+      <div class="ceo-container" id="ceo_decision_display">
+        <div class="card-empty" id="ceo_empty_state">Executive directive awaiting swarm completion...</div>
+      </div>
+    </section>
+
+    <!-- PAGE 4: SURPRISE ROUND -->
+    <section class="page-section" id="page4">
+      <div class="section-header">
+        <h2 class="section-title">SURPRISE ROUND // ADAPTIVE RE-EVALUATION</h2>
+        <p class="section-desc">Test decision resilience against unexpected market changes or disruptions.</p>
+      </div>
+
+      <div class="surprise-box">
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <label for="surprise_input" style="color: #888; font-size: 11px; text-transform: uppercase;">
+            Inject Surprise Market Event:
+          </label>
+          <textarea id="surprise_input" rows="4" placeholder="Enter the surprise event (e.g. competitor launched, budget cut 40%)..." disabled></textarea>
+        </div>
+
+        <button class="btn" id="run_surprise_btn" disabled>
+          <span>INJECT SURPRISE</span>
+          <span>&rarr;</span>
+        </button>
+
+        <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
+          <div style="color: #ffd600; font-size: 11px; font-weight: 700; text-transform: uppercase;">
+            Adaptive CEO Strategy Directive:
+          </div>
+          <div class="revised-display" id="revised_decision_display">
+            <span style="color: #444; font-style: italic;">No surprise event injected yet. Deploy initial swarm first.</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PAGE 5: EXECUTION LOG -->
+    <section class="page-section" id="page5">
+      <div class="section-header">
+        <h2 class="section-title">EXECUTION LOG // REALTIME SWARM TRACE</h2>
+        <p class="section-desc">Live state transition events and agent task execution log.</p>
+      </div>
+
+      <div class="terminal-container" id="trace_log_container">
+        <div class="log-line">
+          <span class="log-ts">[00:00:00]</span>
+          <span class="log-content" style="color: #555;">[SYSTEM] Swarm node initialized. Awaiting user dispatch...</span>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    // State
+    let currentBusinessProblem = "";
+    let isRunning = false;
+
+    // Navigation
+    const navLinks = document.querySelectorAll('.nav-link');
+    const pageSections = document.querySelectorAll('.page-section');
+
+    function navigateToPage(pageId) {
+      navLinks.forEach(link => {
+        if (link.getAttribute('data-page') === pageId) {
+          link.classList.add('active');
+        } else {
+          link.classList.remove('active');
+        }
+      });
+
+      pageSections.forEach(section => {
+        if (section.id === pageId) {
+          section.classList.add('active');
+        } else {
+          section.classList.remove('active');
+        }
+      });
+    }
+
+    navLinks.forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const targetPage = link.getAttribute('data-page');
+        navigateToPage(targetPage);
+      });
+    });
+
+    // Formatting timestamp
+    function getTimestamp() {
+      const now = new Date();
+      return '[' + now.toTimeString().split(' ')[0] + ']';
+    }
+
+    // Append log line
+    function appendTraceLine(entry) {
+      const container = document.getElementById('trace_log_container');
+      const line = document.createElement('div');
+      line.className = 'log-line';
+
+      let colorClass = 'log-content';
+      if (entry.includes('[RESEARCH]')) colorClass = 'log-research';
+      else if (entry.includes('[FINANCE]')) colorClass = 'log-finance';
+      else if (entry.includes('[MARKETING]')) colorClass = 'log-marketing';
+      else if (entry.includes('[CHALLENGE]')) colorClass = 'log-challenge';
+      else if (entry.includes('[CEO]')) colorClass = 'log-ceo';
+      else if (entry.includes('[SURPRISE]')) colorClass = 'log-surprise';
+
+      line.innerHTML = `
+        <span class="log-ts">${getTimestamp()}</span>
+        <span class="${colorClass}">${escapeHtml(entry)}</span>
+      `;
+      container.appendChild(line);
+      container.scrollTop = container.scrollHeight;
+    }
+
+    function escapeHtml(text) {
+      if (!text) return '';
+      return text
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    // Parse CEO output into formatted sections
+    function renderCeoDecision(ceoText, kpis) {
+      const display = document.getElementById('ceo_decision_display');
+      display.innerHTML = '';
+
+      if (!ceoText) {
+        display.innerHTML = '<div class="card-empty">No decision generated.</div>';
+        return;
+      }
+
+      const sectionRegex = /(DECISION|EVIDENCE USED|REJECTED ALTERNATIVE|KEY RISKS|IMPLEMENTATION|KPIs):\s*([\s\S]*?)(?=(?:DECISION|EVIDENCE USED|REJECTED ALTERNATIVE|KEY RISKS|IMPLEMENTATION|KPIs):|$)/gi;
+      let match;
+      const parsedSections = {};
+
+      while ((match = sectionRegex.exec(ceoText)) !== null) {
+        const title = match[1].toUpperCase().trim();
+        const content = match[2].trim();
+        parsedSections[title] = content;
+      }
+
+      const sectionConfigs = [
+        { key: 'DECISION', label: 'DECISION', cssClass: 'decision', lblClass: 'lbl-decision' },
+        { key: 'EVIDENCE USED', label: 'EVIDENCE USED', cssClass: 'evidence', lblClass: 'lbl-evidence' },
+        { key: 'REJECTED ALTERNATIVE', label: 'REJECTED ALTERNATIVE', cssClass: 'rejected', lblClass: 'lbl-rejected' },
+        { key: 'KEY RISKS', label: 'KEY RISKS', cssClass: 'risks', lblClass: 'lbl-risks' },
+        { key: 'IMPLEMENTATION', label: 'IMPLEMENTATION', cssClass: 'implementation', lblClass: 'lbl-implementation' },
+        { key: 'KPIs', label: 'KPIs', cssClass: 'kpis-block', lblClass: 'lbl-kpis' }
+      ];
+
+      sectionConfigs.forEach(cfg => {
+        if (parsedSections[cfg.key]) {
+          const block = document.createElement('div');
+          block.className = `ceo-section-block ${cfg.cssClass}`;
+          block.innerHTML = `
+            <div class="ceo-label ${cfg.lblClass}">&#9654; ${cfg.label}</div>
+            <div class="ceo-text">${escapeHtml(parsedSections[cfg.key])}</div>
+          `;
+          display.appendChild(block);
+        }
+      });
+
+      // If regex did not match standard structure, output full text
+      if (Object.keys(parsedSections).length === 0) {
+        const fallback = document.createElement('div');
+        fallback.className = 'ceo-section-block decision';
+        fallback.innerHTML = `
+          <div class="ceo-label lbl-decision">&#9654; EXECUTIVE SUMMARY</div>
+          <div class="ceo-text">${escapeHtml(ceoText)}</div>
+        `;
+        display.appendChild(fallback);
+      }
+
+      // Display KPI badges / pills
+      if (kpis && kpis.length > 0) {
+        const kpiBlock = document.createElement('div');
+        kpiBlock.style.marginTop = '10px';
+        kpiBlock.innerHTML = `<div class="ceo-label lbl-kpis">&#9889; TRACKED KPI TARGETS:</div>`;
+        
+        const pillsContainer = document.createElement('div');
+        pillsContainer.className = 'kpi-pills';
+        kpis.forEach(kpi => {
+          const pill = document.createElement('div');
+          pill.className = 'kpi-pill';
+          pill.textContent = kpi;
+          pillsContainer.appendChild(pill);
+        });
+        kpiBlock.appendChild(pillsContainer);
+        display.appendChild(kpiBlock);
+      }
+    }
+
+    // Deploy Swarm Handler
+    document.getElementById('run_swarm_btn').addEventListener('click', async () => {
+      const problemInput = document.getElementById('business_problem').value.trim();
+      if (!problemInput) {
+        alert('Please enter a business problem statement.');
+        return;
+      }
+
+      currentBusinessProblem = problemInput;
+      isRunning = true;
+
+      const statusBar = document.getElementById('status_bar');
+      const statusText = document.getElementById('status_text');
+      const statusCursor = document.getElementById('status_cursor');
+      const runBtn = document.getElementById('run_swarm_btn');
+
+      statusBar.classList.add('active');
+      statusText.textContent = 'DEPLOYING SWARM...';
+      statusCursor.style.display = 'inline-block';
+      runBtn.disabled = true;
+
+      appendTraceLine('[SYSTEM] Dispatching swarm mission: ' + problemInput);
+
+      try {
+        const response = await fetch('/api/run', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ business_problem: problemInput })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || data.error) {
+          throw new Error(data.error || 'Server error occurred');
+        }
+
+        // Populate Cards
+        document.getElementById('research_card_content').textContent = data.research || 'No research output';
+        document.getElementById('finance_card_content').textContent = data.finance || 'No finance output';
+        document.getElementById('marketing_card_content').textContent = data.marketing || 'No marketing output';
+        document.getElementById('challenge_card_content').textContent = data.challenge || 'No challenge output';
+
+        // Populate CEO Decision
+        renderCeoDecision(data.ceo_decision, data.kpis);
+
+        // Populate Trace Log
+        if (data.trace && Array.isArray(data.trace)) {
+          data.trace.forEach(entry => appendTraceLine(entry));
+        }
+
+        // Enable Surprise Round
+        document.getElementById('surprise_input').disabled = false;
+        document.getElementById('run_surprise_btn').disabled = false;
+
+        statusText.textContent = 'MISSION COMPLETE // CEO DECISION ISSUED';
+        statusCursor.style.display = 'none';
+
+        // Auto-navigate to Page 2, then Page 3
+        setTimeout(() => {
+          navigateToPage('page2');
+          setTimeout(() => {
+            navigateToPage('page3');
+          }, 600);
+        }, 600);
+
+      } catch (err) {
+        statusText.textContent = 'MISSION ERROR: ' + err.message;
+        statusCursor.style.display = 'none';
+        appendTraceLine('[ERROR] ' + err.message);
+      } finally {
+        isRunning = false;
+        runBtn.disabled = false;
+      }
+    });
+
+    // Inject Surprise Handler
+    document.getElementById('run_surprise_btn').addEventListener('click', async () => {
+      const surpriseInput = document.getElementById('surprise_input').value.trim();
+      if (!surpriseInput) {
+        alert('Please enter a surprise event statement.');
+        return;
+      }
+
+      if (!currentBusinessProblem) {
+        alert('Please deploy the initial swarm first.');
+        return;
+      }
+
+      const surpriseBtn = document.getElementById('run_surprise_btn');
+      const surpriseDisplay = document.getElementById('revised_decision_display');
+      surpriseBtn.disabled = true;
+      surpriseDisplay.textContent = 'EVALUATING SURPRISE EVENT & ADAPTING STRATEGY...';
+
+      appendTraceLine('[SURPRISE] Injecting event: ' + surpriseInput);
+
+      try {
+        const response = await fetch('/api/run', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            business_problem: currentBusinessProblem,
+            surprise: surpriseInput
+          })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || data.error) {
+          throw new Error(data.error || 'Server error occurred');
+        }
+
+        surpriseDisplay.textContent = data.revised_decision || 'No revised decision produced.';
+
+        if (data.trace && Array.isArray(data.trace)) {
+          // Append the surprise trace line if present
+          data.trace.filter(t => t.includes('[SURPRISE]')).forEach(entry => appendTraceLine(entry));
+        }
+
+        appendTraceLine('[SURPRISE] Re-evaluation complete');
+      } catch (err) {
+        surpriseDisplay.textContent = 'ERROR: ' + err.message;
+        appendTraceLine('[ERROR] Surprise execution failed: ' + err.message);
+      } finally {
+        surpriseBtn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
