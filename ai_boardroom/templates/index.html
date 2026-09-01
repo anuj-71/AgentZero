@@ -1,0 +1,1845 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Agentic Swarm – AI Boardroom</title>
+<style>
+/* ══════════════════════════════════════════════
+   RESET & TOKENS
+══════════════════════════════════════════════ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0d0e17;--bg2:#13141f;--bg3:#1a1b2e;--bg4:#20213a;
+  --border:#2a2b45;--border2:#333560;
+  --purple:#7c3aed;--purple2:#8b5cf6;--purple3:#a78bfa;--purple4:#6d28d9;
+  --green:#10b981;--amber:#f59e0b;--red:#ef4444;--blue:#3b82f6;--cyan:#06b6d4;
+  --text:#f1f5f9;--text2:#94a3b8;--text3:#64748b;
+  --mono:'JetBrains Mono','Fira Code','Courier New',monospace;
+  --sans:'Inter','Segoe UI',system-ui,sans-serif;
+  --glow:0 0 24px rgba(124,58,237,.35);
+  --glow2:0 0 40px rgba(124,58,237,.5);
+}
+html,body{height:100%;font-family:var(--sans);background:var(--bg);color:var(--text);overflow:hidden}
+button{cursor:pointer;border:none;outline:none;font-family:var(--sans)}
+input,textarea,select{font-family:var(--sans);outline:none;border:none}
+a{text-decoration:none;color:inherit}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+
+/* ══════════════════════════════════════════════
+   VIEWS
+══════════════════════════════════════════════ */
+.view{display:none;width:100%;height:100%}
+.view.active{display:flex;flex-direction:column}
+
+/* ══════════════════════════════════════════════
+   TOPBAR
+══════════════════════════════════════════════ */
+.topbar{
+  display:flex;align-items:center;gap:0;
+  height:52px;min-height:52px;
+  background:var(--bg2);border-bottom:1px solid var(--border);
+  padding:0 20px;position:relative;z-index:100;flex-shrink:0;
+}
+.topbar-logo{
+  display:flex;align-items:center;gap:10px;
+  font-size:15px;font-weight:700;letter-spacing:.04em;color:var(--purple3);
+  margin-right:28px;cursor:pointer;
+}
+.topbar-logo svg{width:26px;height:26px}
+.topbar-nav{display:flex;gap:2px;flex:1}
+.topbar-nav a,.topbar-nav button{
+  background:none;color:var(--text2);font-size:13px;font-weight:500;
+  padding:6px 14px;border-radius:6px;cursor:pointer;border:none;
+  transition:all .15s;letter-spacing:.02em;
+}
+.topbar-nav a:hover,.topbar-nav button:hover{color:var(--text);background:var(--bg3)}
+.topbar-nav a.active,.topbar-nav button.active{
+  color:var(--text);border-bottom:2px solid var(--purple2);border-radius:0;
+  padding-bottom:4px;
+}
+.topbar-search{
+  display:flex;align-items:center;gap:8px;
+  background:var(--bg3);border:1px solid var(--border);border-radius:8px;
+  padding:6px 12px;margin-right:16px;
+}
+.topbar-search input{background:none;color:var(--text);font-size:13px;width:180px}
+.topbar-search input::placeholder{color:var(--text3)}
+.topbar-search svg{color:var(--text3);width:14px;height:14px}
+.topbar-right{display:flex;align-items:center;gap:8px;margin-left:auto}
+.icon-btn{
+  background:none;color:var(--text2);padding:6px;border-radius:6px;
+  display:flex;align-items:center;justify-content:center;transition:all .15s;
+}
+.icon-btn:hover{background:var(--bg3);color:var(--text)}
+.btn-emergency{
+  background:transparent;border:1px solid var(--red);
+  color:var(--red);font-size:12px;font-weight:600;
+  padding:6px 14px;border-radius:7px;letter-spacing:.04em;
+  transition:all .15s;
+}
+.btn-emergency:hover{background:rgba(239,68,68,.1)}
+.btn-deploy{
+  background:var(--purple);color:#fff;font-size:12px;font-weight:600;
+  padding:7px 16px;border-radius:7px;letter-spacing:.04em;
+  box-shadow:var(--glow);transition:all .15s;
+}
+.btn-deploy:hover{background:var(--purple2);box-shadow:var(--glow2)}
+.avatar{width:30px;height:30px;border-radius:50%;background:var(--border2);overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--purple3)}
+.budget-badge{
+  background:var(--bg3);border:1px solid var(--border);
+  color:var(--green);font-size:12px;font-weight:700;
+  padding:5px 12px;border-radius:6px;font-family:var(--mono);
+}
+.round-badge{
+  background:var(--bg3);border:1px solid var(--border);
+  color:var(--amber);font-size:11px;font-weight:600;
+  padding:5px 12px;border-radius:6px;letter-spacing:.05em;
+}
+</style>
+<style>
+/* ══════════════════════════════════════════════
+   SIDEBAR
+══════════════════════════════════════════════ */
+.sidebar{
+  width:210px;min-width:210px;background:var(--bg2);
+  border-right:1px solid var(--border);display:flex;flex-direction:column;
+  padding:16px 0;overflow-y:auto;flex-shrink:0;
+}
+.sidebar-session{
+  padding:0 16px 16px;border-bottom:1px solid var(--border);margin-bottom:12px;
+}
+.sidebar-session-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px}
+.sidebar-session-sub{font-size:11px;color:var(--text3);line-height:1.4}
+.sidebar-session-icon{
+  width:34px;height:34px;border-radius:8px;background:var(--bg4);
+  border:1px solid var(--border);display:flex;align-items:center;justify-content:center;
+  margin-bottom:10px;
+}
+.sidebar-session-badge{
+  display:inline-flex;align-items:center;gap:5px;
+  font-size:10px;color:var(--text3);margin-top:6px;
+}
+.sidebar-engine{
+  padding:10px 16px;background:var(--bg3);margin:0 10px 14px;
+  border-radius:8px;border:1px solid var(--border);
+}
+.sidebar-engine-label{font-size:10px;color:var(--text3);letter-spacing:.05em;margin-bottom:4px}
+.sidebar-engine-name{font-size:12px;font-weight:600;color:var(--purple3)}
+.sidebar-nav{flex:1;padding:0 8px}
+.sidebar-nav a,.sidebar-nav button{
+  display:flex;align-items:center;gap:10px;
+  width:100%;background:none;color:var(--text2);
+  font-size:13px;font-weight:500;padding:8px 10px;
+  border-radius:7px;cursor:pointer;border:none;
+  transition:all .15s;margin-bottom:2px;text-align:left;
+}
+.sidebar-nav a:hover,.sidebar-nav button:hover{background:var(--bg3);color:var(--text)}
+.sidebar-nav a.active,.sidebar-nav button.active{
+  background:rgba(124,58,237,.18);color:var(--purple3);border-left:2px solid var(--purple2);
+}
+.sidebar-nav .nav-dot{
+  width:7px;height:7px;border-radius:50%;background:var(--text3);flex-shrink:0;
+}
+.sidebar-nav button.active .nav-dot{background:var(--purple3)}
+.sidebar-bottom{padding:12px 8px 0;border-top:1px solid var(--border);margin-top:auto}
+.sidebar-bottom button{
+  display:flex;align-items:center;gap:8px;width:100%;
+  background:none;color:var(--text3);font-size:12px;
+  padding:7px 10px;border-radius:6px;cursor:pointer;border:none;
+  transition:all .15s;margin-bottom:2px;
+}
+.sidebar-bottom button:hover{background:var(--bg3);color:var(--text2)}
+.new-swarm-btn{
+  display:flex;align-items:center;gap:8px;width:100%;
+  background:var(--bg3);border:1px solid var(--border);
+  color:var(--text2);font-size:12px;font-weight:500;
+  padding:8px 10px;border-radius:7px;cursor:pointer;
+  transition:all .15s;margin-bottom:12px;
+}
+.new-swarm-btn:hover{background:var(--bg4);border-color:var(--purple);color:var(--purple3)}
+
+/* ══════════════════════════════════════════════
+   MAIN CONTENT AREA
+══════════════════════════════════════════════ */
+.main{flex:1;overflow:hidden;display:flex;flex-direction:column;position:relative}
+.scroll-area{flex:1;overflow-y:auto;overflow-x:hidden}
+
+/* ══════════════════════════════════════════════
+   VIEW 1 – LANDING / EXECUTIVE OVERVIEW
+══════════════════════════════════════════════ */
+#view-landing{background:var(--bg)}
+#view-landing .scroll-area{display:flex;flex-direction:column;align-items:center}
+.landing-body{padding:48px 56px;max-width:1200px;width:100%;}
+.landing-hero h1{
+  font-size:52px;font-weight:800;line-height:1.05;
+  color:var(--text);letter-spacing:-.02em;margin-bottom:4px;
+}
+.landing-hero h1 span{color:var(--purple3)}
+.landing-hero p{font-size:15px;color:var(--text2);margin-top:12px;max-width:500px;line-height:1.6}
+.landing-grid{display:grid;grid-template-columns:1fr 340px;gap:24px;margin-top:36px}
+
+/* Problem card */
+.problem-card{
+  background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:28px;
+}
+.problem-card-header{
+  display:flex;align-items:center;gap:10px;margin-bottom:24px;
+}
+.problem-card-header svg{color:var(--purple3)}
+.problem-card-header h2{
+  font-size:12px;font-weight:700;letter-spacing:.1em;color:var(--text);
+  text-transform:uppercase;
+}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.form-group{display:flex;flex-direction:column;gap:6px}
+.form-label{font-size:10px;font-weight:600;letter-spacing:.08em;color:var(--text3);text-transform:uppercase}
+.form-input{
+  background:var(--bg3);border:1px solid var(--border);border-radius:8px;
+  color:var(--text);font-size:13px;padding:10px 14px;transition:border .15s;
+}
+.form-input:focus{border-color:var(--purple)}
+.form-input::placeholder{color:var(--text3)}
+textarea.form-input{resize:none;height:130px;line-height:1.5}
+.char-count{font-size:11px;color:var(--text3);text-align:right;margin-top:4px}
+.form-actions{display:grid;grid-template-columns:1fr auto;gap:10px;margin-top:20px}
+.btn-convene{
+  background:var(--purple);color:#fff;font-size:13px;font-weight:700;
+  padding:13px 20px;border-radius:9px;letter-spacing:.06em;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  box-shadow:var(--glow);transition:all .2s;
+}
+.btn-convene:hover{background:var(--purple2);box-shadow:var(--glow2);transform:translateY(-1px)}
+.btn-demo{
+  background:var(--bg3);border:1px solid var(--border);
+  color:var(--text2);font-size:12px;font-weight:600;
+  padding:13px 18px;border-radius:9px;letter-spacing:.04em;
+  display:flex;align-items:center;gap:8px;transition:all .15s;
+}
+.btn-demo:hover{border-color:var(--purple);color:var(--purple3)}
+
+/* Composition card */
+.composition-card{
+  background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:24px;
+}
+.composition-header{
+  display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;
+}
+.composition-title{
+  display:flex;align-items:center;gap:8px;
+  font-size:13px;font-weight:700;color:var(--text);
+}
+.agent-count-badge{
+  background:var(--bg4);border:1px solid var(--border2);
+  color:var(--text2);font-size:10px;font-weight:700;
+  padding:3px 9px;border-radius:5px;letter-spacing:.06em;
+  display:flex;flex-direction:column;align-items:center;line-height:1.2;
+}
+.composition-sub{font-size:12px;color:var(--text3);line-height:1.5;margin-bottom:18px}
+.agent-list{display:flex;flex-direction:column;gap:8px}
+.agent-item{
+  display:flex;align-items:center;gap:10px;
+  background:var(--bg3);border:1px solid var(--border);border-radius:8px;
+  padding:10px 12px;
+}
+.agent-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.agent-item-name{font-size:12px;font-weight:600;color:var(--text);flex:1;font-family:var(--mono)}
+.agent-item-role{font-size:11px;color:var(--text3)}
+</style>
+<style>
+/* ══════════════════════════════════════════════
+   VIEW 2 – BOARDROOM ASSEMBLY (LOADING)
+══════════════════════════════════════════════ */
+#view-assembly{background:var(--bg);justify-content:center;align-items:center}
+.assembly-inner{width:900px;max-width:95vw;padding:40px}
+.assembly-title{
+  font-size:38px;font-weight:800;text-align:center;
+  color:var(--text);margin-bottom:8px;letter-spacing:-.02em;
+}
+.assembly-sub{font-size:15px;color:var(--text2);text-align:center;margin-bottom:40px}
+.assembly-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.agent-card{
+  background:var(--bg2);border:1px solid var(--border);border-radius:12px;
+  padding:20px;position:relative;overflow:hidden;transition:all .3s;
+}
+.agent-card.ready{border-color:var(--border2)}
+.agent-card.speaking{border-color:var(--purple);box-shadow:var(--glow)}
+.agent-card-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px}
+.agent-card-icon{
+  width:38px;height:38px;border-radius:9px;background:var(--bg3);
+  border:1px solid var(--border);display:flex;align-items:center;justify-content:center;
+  font-size:18px;
+}
+.agent-card-role{font-size:11px;font-weight:600;letter-spacing:.04em}
+.agent-card-name{font-size:20px;font-weight:700;color:var(--text);margin-bottom:4px;letter-spacing:-.01em}
+.agent-card-dept{font-size:12px;color:var(--text3);margin-bottom:16px}
+.agent-card-footer{display:flex;align-items:center;justify-content:space-between}
+.agent-card-sub{font-size:12px;color:var(--text2)}
+.status-dot{display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600}
+.status-dot::before{content:'';width:7px;height:7px;border-radius:50%;background:currentColor;display:block}
+.status-ready{color:var(--green)}
+.status-pending{color:var(--amber)}
+.status-speaking{color:var(--purple3);animation:pulse .8s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.assembly-progress{
+  margin-top:32px;text-align:center;
+}
+.progress-bar-outer{
+  height:3px;background:var(--bg3);border-radius:2px;
+  overflow:hidden;margin:12px 0 8px;
+}
+.progress-bar-inner{
+  height:100%;background:linear-gradient(90deg,var(--purple),var(--purple3));
+  border-radius:2px;transition:width .4s ease;
+}
+.progress-label{font-size:12px;color:var(--text3)}
+
+/* ══════════════════════════════════════════════
+   VIEW 3 – BOARDROOM LIVE (CANVAS + TRANSCRIPT)
+══════════════════════════════════════════════ */
+#view-boardroom{background:var(--bg)}
+#view-boardroom.active{flex-direction:column}
+.boardroom-main{flex:1;display:flex;flex-direction:column;min-width:0}
+.boardroom-header{
+  padding:16px 24px;border-bottom:1px solid var(--border);
+  display:flex;align-items:flex-start;justify-content:space-between;flex-shrink:0;
+}
+.boardroom-title{font-size:22px;font-weight:700;color:var(--text);letter-spacing:-.01em}
+.boardroom-meta{font-size:12px;color:var(--text3);margin-top:4px}
+.stage-trail{display:flex;align-items:center;gap:6px}
+.stage-item{
+  font-size:11px;font-weight:600;letter-spacing:.06em;color:var(--text3);cursor:pointer;
+  padding:4px 10px;border-radius:4px;transition:all .15s;
+}
+.stage-item.active{color:var(--purple3);background:rgba(124,58,237,.15)}
+.stage-item.done{color:var(--text2)}
+.stage-sep{color:var(--border2);font-size:14px}
+
+/* Canvas area */
+.canvas-area{
+  flex:1;position:relative;overflow:hidden;
+  background:radial-gradient(ellipse at 50% 50%, rgba(124,58,237,.04) 0%, transparent 70%);
+}
+.canvas-grid{
+  position:absolute;inset:0;
+  background-image:
+    linear-gradient(var(--border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border) 1px, transparent 1px);
+  background-size:32px 32px;
+  opacity:.25;
+}
+.canvas-nodes{position:absolute;inset:0}
+.canvas-node{
+  position:absolute;display:flex;flex-direction:column;align-items:center;gap:6px;
+  cursor:pointer;transform:translate(-50%,-50%);
+}
+.node-box{
+  width:64px;height:64px;border-radius:14px;
+  background:var(--bg2);border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  font-size:26px;transition:all .3s;position:relative;
+}
+.canvas-node:hover .node-box{border-color:var(--purple);box-shadow:var(--glow)}
+.canvas-node.speaking .node-box{
+  border-color:var(--amber);
+  box-shadow:0 0 0 2px rgba(245,158,11,.3),0 0 20px rgba(245,158,11,.3);
+  animation:nodePulse 1s infinite;
+}
+@keyframes nodePulse{0%,100%{box-shadow:0 0 0 2px rgba(245,158,11,.3),0 0 20px rgba(245,158,11,.3)}50%{box-shadow:0 0 0 4px rgba(245,158,11,.2),0 0 32px rgba(245,158,11,.4)}}
+.canvas-node.director .node-box{border-color:var(--purple2);background:rgba(124,58,237,.1)}
+.node-label{
+  font-size:10px;font-weight:600;letter-spacing:.06em;color:var(--text2);
+  white-space:nowrap;text-align:center;
+}
+.node-speaking-badge{
+  position:absolute;bottom:-8px;left:50%;transform:translateX(-50%);
+  background:var(--amber);color:var(--bg);font-size:9px;font-weight:700;
+  padding:2px 7px;border-radius:3px;white-space:nowrap;letter-spacing:.04em;
+}
+.connection-svg{position:absolute;inset:0;pointer-events:none}
+.connection-line{stroke:var(--border2);stroke-width:1;stroke-dasharray:4 4;fill:none;opacity:.5}
+.connection-line.active{stroke:var(--purple3);opacity:.8;stroke-dasharray:none;animation:flowLine 1s linear infinite}
+@keyframes flowLine{to{stroke-dashoffset:-8}}
+
+/* Canvas controls */
+.canvas-controls{
+  position:absolute;bottom:12px;right:12px;
+  display:flex;align-items:center;gap:8px;
+}
+.canvas-ctrl-btn{
+  width:38px;height:38px;border-radius:8px;
+  background:var(--bg2);border:1px solid var(--border);
+  color:var(--text2);display:flex;align-items:center;justify-content:center;
+  font-size:16px;cursor:pointer;transition:all .15s;
+}
+.canvas-ctrl-btn:hover{border-color:var(--purple);color:var(--purple3)}
+.canvas-ctrl-btn.active{background:rgba(124,58,237,.15);border-color:var(--purple);color:var(--purple3)}
+
+/* Transcript panel */
+.transcript-panel{
+  flex-shrink:0;height:220px;background:var(--bg2);
+  border-top:1px solid var(--border);display:flex;flex-direction:column;
+}
+.transcript-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 18px;border-bottom:1px solid var(--border);flex-shrink:0;
+}
+.transcript-title{
+  display:flex;align-items:center;gap:8px;
+  font-size:11px;font-weight:700;letter-spacing:.08em;color:var(--text2);text-transform:uppercase;
+}
+.recording-badge{
+  display:flex;align-items:center;gap:5px;
+  font-size:10px;font-weight:700;color:var(--red);letter-spacing:.06em;
+}
+.recording-badge::before{
+  content:'';width:6px;height:6px;border-radius:50%;background:var(--red);
+  animation:recBlink 1s infinite;
+}
+@keyframes recBlink{0%,100%{opacity:1}50%{opacity:.2}}
+.transcript-scroll{flex:1;overflow-y:auto;padding:8px 0}
+.transcript-line{
+  display:grid;grid-template-columns:56px 90px 1fr;
+  gap:0;padding:5px 18px;font-size:12px;font-family:var(--mono);
+  align-items:start;transition:background .1s;
+}
+.transcript-line:hover{background:rgba(255,255,255,.03)}
+.t-time{color:var(--text3);font-size:11px;padding-top:1px}
+.t-agent{font-weight:700;font-size:11px;padding-top:1px}
+.t-text{color:var(--text2);line-height:1.5;font-size:12px;font-family:var(--sans)}
+.t-text.highlight{color:var(--text)}
+</style>
+<style>
+/* ══════════════════════════════════════════════
+   VIEW 4 – DECISION SYNTHESIS
+══════════════════════════════════════════════ */
+#view-decision{background:var(--bg)}
+#view-decision.active{flex-direction:column}
+.decision-main{flex:1;overflow-y:auto;padding:28px 28px 28px 24px;min-width:0}
+.decision-sidebar-right{
+  width:300px;min-width:300px;border-left:1px solid var(--border);
+  overflow-y:auto;display:flex;flex-direction:column;gap:0;flex-shrink:0;
+}
+.decision-header{margin-bottom:20px}
+.decision-header h1{font-size:30px;font-weight:800;letter-spacing:-.02em;color:var(--text);margin-bottom:6px}
+.decision-header p{font-size:13px;color:var(--text2)}
+.decision-header-actions{display:flex;gap:10px;margin-top:14px}
+.btn-audit,.btn-report{
+  display:flex;align-items:center;gap:7px;font-size:12px;font-weight:600;
+  padding:8px 16px;border-radius:8px;letter-spacing:.03em;cursor:pointer;transition:all .15s;
+}
+.btn-audit{background:var(--bg3);border:1px solid var(--border);color:var(--text2)}
+.btn-audit:hover{border-color:var(--purple);color:var(--purple3)}
+.btn-report{background:var(--purple);color:#fff;border:none;box-shadow:var(--glow)}
+.btn-report:hover{background:var(--purple2)}
+.ceo-decision-card{
+  background:var(--bg2);border:1px solid var(--border2);border-radius:12px;
+  padding:24px;margin-bottom:16px;position:relative;overflow:hidden;
+}
+.ceo-decision-card::before{
+  content:'';position:absolute;left:0;top:0;bottom:0;width:3px;
+  background:var(--purple2);
+}
+.ceo-label{
+  display:flex;align-items:center;gap:7px;
+  font-size:10px;font-weight:700;letter-spacing:.1em;color:var(--purple3);
+  text-transform:uppercase;margin-bottom:10px;
+}
+.ceo-decision-text{font-size:22px;font-weight:700;color:var(--text);letter-spacing:-.01em;line-height:1.2}
+.evidence-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.evidence-card{
+  background:var(--bg3);border:1px solid var(--border);border-radius:9px;padding:14px;
+}
+.evidence-source{
+  display:flex;align-items:center;gap:6px;
+  font-size:10px;font-weight:600;letter-spacing:.07em;color:var(--text3);
+  text-transform:uppercase;margin-bottom:8px;
+}
+.evidence-text{font-size:12px;color:var(--text2);line-height:1.6}
+
+/* KPI Dashboard */
+.kpi-section{margin-bottom:16px}
+.section-label{
+  font-size:10px;font-weight:700;letter-spacing:.1em;color:var(--text3);
+  text-transform:uppercase;margin-bottom:12px;
+}
+.kpi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.kpi-card{
+  background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;
+}
+.kpi-label{font-size:11px;color:var(--text3);display:flex;align-items:center;gap:6px;margin-bottom:8px}
+.kpi-value{font-size:26px;font-weight:800;color:var(--text);font-family:var(--mono);line-height:1}
+.kpi-change{font-size:11px;color:var(--green);margin-top:6px;font-weight:600}
+.kpi-sub{font-size:11px;color:var(--text3);margin-top:4px}
+
+/* Trace */
+.trace-section{background:var(--bg2);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.trace-header{
+  padding:10px 16px;border-bottom:1px solid var(--border);
+  font-size:10px;font-weight:700;letter-spacing:.1em;color:var(--text3);text-transform:uppercase;
+}
+.trace-lines{padding:8px 0;max-height:220px;overflow-y:auto}
+.trace-entry{
+  display:grid;grid-template-columns:64px 90px 1fr;
+  gap:0;padding:5px 16px;font-family:var(--mono);font-size:11px;align-items:start;
+}
+.te-time{color:var(--text3)}
+.te-agent{font-weight:700}
+.te-text{color:var(--text3);line-height:1.4}
+
+/* Right sidebar panels */
+.rsp-section{border-bottom:1px solid var(--border);padding:20px}
+.rsp-label{
+  font-size:10px;font-weight:700;letter-spacing:.1em;color:var(--text3);
+  text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:6px;
+}
+.tradeoff-item{
+  background:var(--bg3);border:1px solid var(--border);border-radius:8px;
+  padding:12px 14px;margin-bottom:8px;
+}
+.tradeoff-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:5px}
+.tradeoff-desc{font-size:11px;color:var(--text3);line-height:1.5}
+.rejected-item{
+  background:var(--bg3);border:1px solid var(--border);border-radius:8px;
+  padding:12px 14px;margin-bottom:8px;
+}
+.rejected-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.rejected-title{font-size:13px;font-weight:600;color:var(--text)}
+.risk-tag{
+  font-size:9px;font-weight:700;letter-spacing:.06em;padding:2px 7px;border-radius:4px;
+}
+.risk-high{background:rgba(239,68,68,.2);color:var(--red)}
+.risk-med{background:rgba(245,158,11,.2);color:var(--amber)}
+.rejected-desc{font-size:11px;color:var(--text3);line-height:1.5}
+.surprise-panel{padding:20px}
+.surprise-input{
+  width:100%;background:var(--bg3);border:1px solid var(--border);
+  border-radius:8px;color:var(--text);font-size:12px;
+  padding:10px 12px;resize:none;height:90px;line-height:1.5;
+  margin-bottom:10px;
+}
+.surprise-input::placeholder{color:var(--text3)}
+.surprise-input:focus{border-color:var(--purple)}
+.btn-trigger{
+  width:100%;background:var(--bg3);border:1px solid var(--border);
+  color:var(--text2);font-size:12px;font-weight:600;
+  padding:10px;border-radius:8px;letter-spacing:.04em;
+  display:flex;align-items:center;justify-content:center;gap:7px;
+  cursor:pointer;transition:all .15s;
+}
+.btn-trigger:hover{border-color:var(--purple);color:var(--purple3)}
+</style>
+<style>
+/* ══════════════════════════════════════════════
+   SHARED UTILITY
+══════════════════════════════════════════════ */
+.tag{
+  display:inline-flex;align-items:center;gap:4px;
+  font-size:10px;font-weight:600;letter-spacing:.05em;
+  padding:3px 8px;border-radius:5px;
+}
+.tag-purple{background:rgba(124,58,237,.2);color:var(--purple3);border:1px solid rgba(124,58,237,.3)}
+.tag-green{background:rgba(16,185,129,.15);color:var(--green);border:1px solid rgba(16,185,129,.25)}
+.tag-amber{background:rgba(245,158,11,.15);color:var(--amber);border:1px solid rgba(245,158,11,.25)}
+.tag-red{background:rgba(239,68,68,.15);color:var(--red);border:1px solid rgba(239,68,68,.25)}
+.tag-blue{background:rgba(59,130,246,.15);color:var(--blue);border:1px solid rgba(59,130,246,.25)}
+.dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.dot-purple{background:var(--purple2)}
+.dot-green{background:var(--green)}
+.dot-amber{background:var(--amber)}
+.dot-red{background:var(--red)}
+.dot-blue{background:var(--blue)}
+.dot-cyan{background:var(--cyan)}
+.hidden{display:none!important}
+/* Spinner */
+.spinner{
+  width:20px;height:20px;border-radius:50%;
+  border:2px solid var(--border2);border-top-color:var(--purple3);
+  animation:spin .7s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* Notification dot */
+.notif-dot{
+  position:absolute;top:5px;right:5px;width:7px;height:7px;
+  border-radius:50%;background:var(--red);
+}
+/* Toast */
+.toast-container{
+  position:fixed;bottom:24px;right:24px;z-index:9999;
+  display:flex;flex-direction:column;gap:8px;
+}
+.toast{
+  background:var(--bg3);border:1px solid var(--border2);border-radius:10px;
+  padding:12px 18px;font-size:13px;color:var(--text);
+  box-shadow:0 8px 32px rgba(0,0,0,.4);
+  animation:toastIn .25s ease;max-width:320px;
+}
+.toast.success{border-left:3px solid var(--green)}
+.toast.error{border-left:3px solid var(--red)}
+.toast.info{border-left:3px solid var(--purple3)}
+@keyframes toastIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* Voice wave */
+.voice-wave{display:flex;align-items:center;gap:3px;height:16px}
+.voice-bar{
+  width:3px;background:var(--purple3);border-radius:2px;
+  animation:voiceAnim 0.8s ease-in-out infinite;
+}
+.voice-bar:nth-child(1){height:6px;animation-delay:0s}
+.voice-bar:nth-child(2){height:12px;animation-delay:.1s}
+.voice-bar:nth-child(3){height:16px;animation-delay:.2s}
+.voice-bar:nth-child(4){height:10px;animation-delay:.3s}
+.voice-bar:nth-child(5){height:6px;animation-delay:.4s}
+@keyframes voiceAnim{
+  0%,100%{transform:scaleY(1)}
+  50%{transform:scaleY(1.6)}
+}
+
+/* Debate badge */
+.debate-badge{
+  display:inline-flex;align-items:center;gap:5px;
+  background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.3);
+  color:var(--red);font-size:10px;font-weight:700;
+  padding:3px 9px;border-radius:5px;letter-spacing:.06em;
+}
+/* Swarm Analytics / Risk Audit placeholder styles */
+#view-analytics,#view-risk{
+  background:var(--bg);
+}
+.analytics-placeholder,.risk-placeholder{
+  flex:1;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:16px;
+  color:var(--text3);font-size:14px;
+  text-align:center;padding:40px;
+}
+.analytics-placeholder svg,.risk-placeholder svg{width:56px;height:56px;opacity:.25}
+</style>
+
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════
+     VIEW 1 – LANDING
+════════════════════════════════════════ -->
+<div id="view-landing" class="view active">
+  <!-- Topbar -->
+  <header class="topbar">
+    <div class="topbar-logo" onclick="showView('landing')">
+      <svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="14,2 24,8 24,20 14,26 4,20 4,8" fill="none" stroke="#8b5cf6" stroke-width="1.5"/>
+        <circle cx="14" cy="14" r="4" fill="#7c3aed"/>
+        <line x1="14" y1="6" x2="14" y2="10" stroke="#8b5cf6" stroke-width="1.2"/>
+        <line x1="14" y1="18" x2="14" y2="22" stroke="#8b5cf6" stroke-width="1.2"/>
+        <line x1="7" y1="10" x2="11" y2="12" stroke="#8b5cf6" stroke-width="1.2"/>
+        <line x1="17" y1="16" x2="21" y2="18" stroke="#8b5cf6" stroke-width="1.2"/>
+        <line x1="21" y1="10" x2="17" y2="12" stroke="#8b5cf6" stroke-width="1.2"/>
+        <line x1="7" y1="18" x2="11" y2="16" stroke="#8b5cf6" stroke-width="1.2"/>
+      </svg>
+      AGENTIC SWARM
+    </div>
+    <nav class="topbar-nav">
+      <button class="active" onclick="showNavTab(this,'landing')">Executive Overview</button>
+      <button onclick="showNavTab(this,'analytics')">Swarm Analytics</button>
+      <button onclick="showNavTab(this,'risk')">Risk Audit</button>
+    </nav>
+    <div class="topbar-right">
+      <button class="icon-btn" style="position:relative">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        <span class="notif-dot"></span>
+      </button>
+      <button class="icon-btn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93A10 10 0 1 1 4.93 19.07"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg>
+      </button>
+      <button class="btn-emergency">Emergency<br>Stop</button>
+      <button class="btn-deploy" onclick="showView('assembly')">Deploy Strategy</button>
+    </div>
+  </header>
+
+  <!-- Body -->
+  <div class="scroll-area">
+    <div class="landing-body">
+      <div class="landing-hero">
+        <h1>Build the decision.<br><span>Let the boardroom debate it.</span></h1>
+        <p>Initialize a high-fidelity multi-agent simulation to stress-test your business strategy before execution.</p>
+      </div>
+
+      <div class="landing-grid">
+        <!-- Problem Input Card -->
+        <div class="problem-card">
+          <div class="problem-card-header">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg>
+            <h2>Business Problem</h2>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Company</label>
+              <input id="inp-company" class="form-input" placeholder="e.g. Acme Corp">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Industry</label>
+              <input id="inp-industry" class="form-input" placeholder="e.g. SaaS / FinTech">
+            </div>
+          </div>
+          <div class="form-group" style="margin-bottom:12px">
+            <label class="form-label">Budget Constraint</label>
+            <input id="inp-budget" class="form-input" placeholder="e.g. $500k initial rollout">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Problem Statement</label>
+            <textarea id="inp-problem" class="form-input" placeholder="Describe the strategic challenge in detail..." oninput="updateCharCount(this)"></textarea>
+            <div class="char-count"><span id="char-count">0</span> / 500</div>
+          </div>
+          <div class="form-actions">
+            <button class="btn-convene" onclick="conveneBoard()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              CONVENE BOARDROOM
+            </button>
+            <button class="btn-demo" onclick="loadDemo()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+              LOAD DEMO CASE
+            </button>
+          </div>
+        </div>
+
+        <!-- Boardroom Composition Card -->
+        <div class="composition-card">
+          <div class="composition-header">
+            <div class="composition-title">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+              Boardroom Composition
+            </div>
+            <div class="agent-count-badge">
+              <span style="font-size:14px;font-weight:800;color:var(--text)">6</span>
+              <span style="font-size:9px;color:var(--text3)">AGENTS</span>
+            </div>
+          </div>
+          <p class="composition-sub">The swarm will instantiate the following specialized personas to analyze your problem.</p>
+          <div class="agent-list">
+            <div class="agent-item">
+              <span class="agent-dot dot-purple"></span>
+              <span class="agent-item-name">CEO Node</span>
+              <span class="agent-item-role">Strategic alignment &amp; final verdict</span>
+            </div>
+            <div class="agent-item">
+              <span class="agent-dot dot-green"></span>
+              <span class="agent-item-name">Finance Alpha</span>
+              <span class="agent-item-role">Budget feasibility &amp; ROI modeling</span>
+            </div>
+            <div class="agent-item">
+              <span class="agent-dot dot-amber"></span>
+              <span class="agent-item-name">Marketing Synthesizer</span>
+              <span class="agent-item-role">Brand impact &amp; market positioning</span>
+            </div>
+            <div class="agent-item">
+              <span class="agent-dot dot-blue"></span>
+              <span class="agent-item-name">Research Deep-Dive</span>
+              <span class="agent-item-role">Competitor analysis &amp; trend forecasting</span>
+            </div>
+            <div class="agent-item">
+              <span class="agent-dot" style="background:var(--blue)"></span>
+              <span class="agent-item-name">Operations Vector</span>
+              <span class="agent-item-role">Logistical execution &amp; scalability</span>
+            </div>
+            <div class="agent-item">
+              <span class="agent-dot dot-red"></span>
+              <span class="agent-item-name">Devil's Advocate</span>
+              <span class="agent-item-role">Risk maximization &amp; counter-arguments</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     VIEW 2 – BOARDROOM ASSEMBLY
+════════════════════════════════════════ -->
+<div id="view-assembly" class="view">
+  <header class="topbar">
+    <div class="topbar-logo" onclick="showView('landing')">
+      <svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="14,2 24,8 24,20 14,26 4,20 4,8" fill="none" stroke="#8b5cf6" stroke-width="1.5"/>
+        <circle cx="14" cy="14" r="4" fill="#7c3aed"/>
+        <line x1="14" y1="6" x2="14" y2="10" stroke="#8b5cf6" stroke-width="1.2"/>
+        <line x1="14" y1="18" x2="14" y2="22" stroke="#8b5cf6" stroke-width="1.2"/>
+        <line x1="7" y1="10" x2="11" y2="12" stroke="#8b5cf6" stroke-width="1.2"/>
+        <line x1="17" y1="16" x2="21" y2="18" stroke="#8b5cf6" stroke-width="1.2"/>
+        <line x1="21" y1="10" x2="17" y2="12" stroke="#8b5cf6" stroke-width="1.2"/>
+        <line x1="7" y1="18" x2="11" y2="16" stroke="#8b5cf6" stroke-width="1.2"/>
+      </svg>
+      Agentic Swarm
+    </div>
+    <nav class="topbar-nav">
+      <button onclick="showNavTab(this,'landing')">Executive Overview</button>
+      <button onclick="showNavTab(this,'analytics')">Swarm Analytics</button>
+      <button onclick="showNavTab(this,'risk')">Risk Audit</button>
+    </nav>
+    <div class="topbar-right">
+      <button class="icon-btn" style="position:relative">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      </button>
+      <button class="icon-btn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg>
+      </button>
+      <div class="avatar">PM</div>
+    </div>
+  </header>
+
+  <div style="flex:1;display:flex;align-items:center;justify-content:center;overflow:auto">
+    <div class="assembly-inner">
+      <h1 class="assembly-title">Boardroom Assembly</h1>
+      <p class="assembly-sub">Connecting strategic AI counterparts...</p>
+      <div class="assembly-grid" id="assembly-grid">
+        <!-- Cards injected by JS -->
+      </div>
+      <div class="assembly-progress">
+        <div class="progress-bar-outer">
+          <div class="progress-bar-inner" id="assembly-progress-bar" style="width:0%"></div>
+        </div>
+        <div class="progress-label" id="assembly-progress-label">Initializing agents...</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     VIEW 3 – BOARDROOM LIVE
+════════════════════════════════════════ -->
+<div id="view-boardroom" class="view">
+  <!-- Topbar with round badge -->
+  <header class="topbar">
+    <div class="topbar-logo" onclick="showView('landing')">
+      <svg viewBox="0 0 28 28" fill="none"><polygon points="14,2 24,8 24,20 14,26 4,20 4,8" fill="none" stroke="#8b5cf6" stroke-width="1.5"/><circle cx="14" cy="14" r="4" fill="#7c3aed"/><line x1="14" y1="6" x2="14" y2="10" stroke="#8b5cf6" stroke-width="1.2"/><line x1="14" y1="18" x2="14" y2="22" stroke="#8b5cf6" stroke-width="1.2"/><line x1="7" y1="10" x2="11" y2="12" stroke="#8b5cf6" stroke-width="1.2"/><line x1="17" y1="16" x2="21" y2="18" stroke="#8b5cf6" stroke-width="1.2"/><line x1="21" y1="10" x2="17" y2="12" stroke="#8b5cf6" stroke-width="1.2"/><line x1="7" y1="18" x2="11" y2="16" stroke="#8b5cf6" stroke-width="1.2"/></svg>
+      Agentic Swarm
+    </div>
+    <div class="round-badge" id="round-badge">ROUND 1 · ANALYSIS</div>
+    <nav class="topbar-nav" style="margin-left:12px">
+      <button class="active" onclick="showNavTab(this,'landing')">Executive Overview</button>
+      <button onclick="showNavTab(this,'analytics')">Swarm Analytics</button>
+      <button onclick="showNavTab(this,'risk')">Risk Audit</button>
+      <button id="decide-nav-btn" onclick="showView('decision')" style="display:none">Decide</button>
+    </nav>
+    <div class="topbar-right">
+      <div class="budget-badge" id="live-budget-badge">Budget: $500K</div>
+      <button class="icon-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></button>
+      <button class="icon-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg></button>
+      <button class="btn-deploy" onclick="showView('decision')">DEPLOY STRATEGY</button>
+      <button class="btn-emergency">EMERGENCY STOP</button>
+    </div>
+  </header>
+
+  <!-- Layout under topbar -->
+  <div style="display:flex;flex:1;overflow:hidden;">
+    <!-- Left sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-session">
+        <div class="sidebar-session-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--purple3)" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        </div>
+        <div class="sidebar-session-title">Boardroom Session</div>
+        <div class="sidebar-session-sub">Active: <span id="sidebar-session-name">Strategic Q4 Review</span></div>
+        <div class="sidebar-session-badge">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          Session active
+        </div>
+      </div>
+      <div class="sidebar-engine">
+        <div class="sidebar-engine-label">INTELLIGENCE ENGINE</div>
+        <div class="sidebar-engine-name">Swarm Intelligence Engine</div>
+      </div>
+      <nav class="sidebar-nav">
+        <button class="active" id="sb-analyze" onclick="setSidebarStage('analyze')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+          Analyze
+        </button>
+        <button id="sb-share" onclick="setSidebarStage('share')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+          Share
+        </button>
+        <button id="sb-challenge" onclick="setSidebarStage('challenge')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          Challenge
+        </button>
+        <button id="sb-compare" onclick="setSidebarStage('compare')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+          Compare
+        </button>
+        <button id="sb-decide" onclick="setSidebarStage('decide')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+          Decide
+        </button>
+        <button id="sb-surprise" onclick="setSidebarStage('surprise')" style="margin-top:8px">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          Surprise
+        </button>
+      </nav>
+      <div class="sidebar-bottom">
+        <button class="new-swarm-btn" onclick="showView('landing')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Initialize New Swarm
+        </button>
+        <button>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+          System Logs
+        </button>
+        <button>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          Support
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main boardroom area -->
+    <div class="boardroom-main">
+      <div class="boardroom-header">
+        <div>
+          <div class="boardroom-title" id="live-problem-title">Market Expansion Strategy</div>
+          <div class="boardroom-meta" id="live-problem-meta">Target: APAC Region | Timeline: Q3 2024</div>
+        </div>
+        <div class="stage-trail">
+          <span class="stage-item active" id="st-analyze">● ANALYZE</span>
+          <span class="stage-sep">/</span>
+          <span class="stage-item" id="st-share">SHARE</span>
+          <span class="stage-sep">/</span>
+          <span class="stage-item" id="st-challenge">CHALLENGE</span>
+          <span class="stage-sep">/</span>
+          <span class="stage-item" id="st-compare">COMPARE</span>
+          <span class="stage-sep">/</span>
+          <span class="stage-item" id="st-decide">DECIDE</span>
+        </div>
+      </div>
+
+      <!-- Canvas -->
+      <div class="canvas-area" id="canvas-area">
+        <div class="canvas-grid"></div>
+        <svg class="connection-svg" id="connection-svg"></svg>
+        <div class="canvas-nodes" id="canvas-nodes"></div>
+        <div class="canvas-controls">
+          <button class="canvas-ctrl-btn" id="btn-voice-toggle" onclick="toggleVoice()" title="Toggle Voice">🔊</button>
+          <button class="canvas-ctrl-btn active" id="btn-pause-play" onclick="togglePause()" title="Pause/Resume">⏸</button>
+          <button class="canvas-ctrl-btn" id="btn-mic" title="Voice Input">🎤</button>
+        </div>
+      </div>
+
+      <!-- Transcript -->
+      <div class="transcript-panel">
+        <div class="transcript-header">
+          <div class="transcript-title">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            LIVE TRANSCRIPT
+          </div>
+          <div class="recording-badge">RECORDING</div>
+        </div>
+        <div class="transcript-scroll" id="transcript-scroll"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     VIEW 4 – DECISION SYNTHESIS
+════════════════════════════════════════ -->
+<div id="view-decision" class="view">
+  <header class="topbar">
+    <div class="topbar-logo" onclick="showView('landing')">
+      <svg viewBox="0 0 28 28" fill="none"><polygon points="14,2 24,8 24,20 14,26 4,20 4,8" fill="none" stroke="#8b5cf6" stroke-width="1.5"/><circle cx="14" cy="14" r="4" fill="#7c3aed"/><line x1="14" y1="6" x2="14" y2="10" stroke="#8b5cf6" stroke-width="1.2"/><line x1="14" y1="18" x2="14" y2="22" stroke="#8b5cf6" stroke-width="1.2"/><line x1="7" y1="10" x2="11" y2="12" stroke="#8b5cf6" stroke-width="1.2"/><line x1="17" y1="16" x2="21" y2="18" stroke="#8b5cf6" stroke-width="1.2"/><line x1="21" y1="10" x2="17" y2="12" stroke="#8b5cf6" stroke-width="1.2"/><line x1="7" y1="18" x2="11" y2="16" stroke="#8b5cf6" stroke-width="1.2"/></svg>
+      Agentic Swarm
+    </div>
+    <div class="topbar-search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input placeholder="Search insights...">
+    </div>
+    <nav class="topbar-nav">
+      <button onclick="showNavTab(this,'landing')">Executive Overview</button>
+      <button onclick="showNavTab(this,'analytics')">Swarm Analytics</button>
+      <button onclick="showNavTab(this,'risk')">Risk Audit</button>
+      <button class="active">Decide</button>
+    </nav>
+    <div class="topbar-right">
+      <button class="icon-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></button>
+      <button class="icon-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg></button>
+      <button class="btn-emergency">Emergency Stop</button>
+      <button class="btn-deploy">Deploy Strategy</button>
+    </div>
+  </header>
+
+  <div style="display:flex;flex:1;overflow:hidden;">
+    <!-- Left sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-session">
+        <div class="sidebar-session-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--purple3)" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        </div>
+        <div class="sidebar-session-title">Boardroom Session</div>
+        <div class="sidebar-session-sub">Active: <span id="dec-session-name">Strategic Q4 Review</span></div>
+      </div>
+      <div class="sidebar-engine">
+        <div class="sidebar-engine-label">INTELLIGENCE ENGINE</div>
+        <div class="sidebar-engine-name">Swarm Intelligence Engine</div>
+      </div>
+      <nav class="sidebar-nav">
+        <button onclick="showView('boardroom');setSidebarStage('analyze')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+          Analyze
+        </button>
+        <button onclick="showView('boardroom');setSidebarStage('share')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+          Share
+        </button>
+        <button onclick="showView('boardroom');setSidebarStage('challenge')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          Challenge
+        </button>
+        <button onclick="showView('boardroom');setSidebarStage('compare')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+          Compare
+        </button>
+        <button class="active">
+          <span class="nav-dot"></span>
+          Decide
+        </button>
+        <button onclick="showView('boardroom');setSidebarStage('surprise')" style="margin-top:8px">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          Surprise
+        </button>
+      </nav>
+      <div class="sidebar-bottom">
+        <button class="new-swarm-btn" onclick="showView('landing')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Initialize New Swarm
+        </button>
+        <button>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+          System Logs
+        </button>
+        <button>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          Support
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main decision area -->
+    <div class="decision-main" id="decision-main">
+      <div class="decision-header">
+        <h1>Decision Synthesis</h1>
+        <p>Final autonomous consensus reached across <strong id="dec-agent-count">5</strong> primary agent domains.</p>
+        <div class="decision-header-actions">
+          <button class="btn-audit" onclick="showView('boardroom')">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            VIEW AUDIT TRACE
+          </button>
+          <button class="btn-report" onclick="downloadReport()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            DOWNLOAD FULL REPORT
+          </button>
+        </div>
+      </div>
+
+      <!-- CEO Decision -->
+      <div class="ceo-decision-card">
+        <div class="ceo-label">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          CEO FINAL DECISION
+        </div>
+        <div class="ceo-decision-text" id="ceo-decision-text">Launch a 3-month regional pilot</div>
+        <div class="evidence-grid">
+          <div class="evidence-card">
+            <div class="evidence-source">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+              Evidence from Research
+            </div>
+            <div class="evidence-text" id="dec-research-evidence">Market penetration analysis indicates a 68% probability of capturing early adopters in the secondary tier. Consumer sentiment models show high receptivity to the proposed feature set.</div>
+          </div>
+          <div class="evidence-card">
+            <div class="evidence-source">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+              Financial Viability
+            </div>
+            <div class="evidence-text" id="dec-finance-evidence">Initial capital outlay is mitigated by projected offset revenues within Month 2. Burn rate remains within acceptable thresholds, preserving runway for global rollout contingencies.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- KPI Dashboard -->
+      <div class="kpi-section">
+        <div class="section-label">PROJECTED KPI DASHBOARD (90 DAYS)</div>
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-label">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+              Revenue Target
+            </div>
+            <div class="kpi-value" id="kpi-revenue">$12.4M</div>
+            <div class="kpi-change" id="kpi-revenue-change">+14% vs Baseline</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              Est. CAC
+            </div>
+            <div class="kpi-value" id="kpi-cac">$420</div>
+            <div class="kpi-sub">Optimal range</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--purple3)" stroke-width="2"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg>
+              Conversion Rate
+            </div>
+            <div class="kpi-value" id="kpi-conversion">8.4%</div>
+            <div class="kpi-sub" id="kpi-conv-label">High confidence</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Trace -->
+      <div class="trace-section">
+        <div class="trace-header">AGENT SWARM REASONING TRACE</div>
+        <div class="trace-lines" id="trace-lines"></div>
+      </div>
+    </div>
+
+    <!-- Right sidebar -->
+    <div class="decision-sidebar-right">
+      <!-- Trade-offs -->
+      <div class="rsp-section">
+        <div class="rsp-label">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          TRADE-OFFS
+        </div>
+        <div id="tradeoffs-list">
+          <div class="tradeoff-item">
+            <div class="tradeoff-title">Delayed Global Revenue</div>
+            <div class="tradeoff-desc">Sacrificing potential Q1 global surge for mitigated risk and refined product-market fit.</div>
+          </div>
+          <div class="tradeoff-item">
+            <div class="tradeoff-title">Resource Allocation</div>
+            <div class="tradeoff-desc">Requires pulling 15% of engineering bandwidth from core maintenance to support localized pilot infrastructure.</div>
+          </div>
+        </div>
+      </div>
+      <!-- Rejected -->
+      <div class="rsp-section">
+        <div class="rsp-label">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+          REJECTED ALTERNATIVES
+        </div>
+        <div id="rejected-list">
+          <div class="rejected-item">
+            <div class="rejected-header">
+              <div class="rejected-title">Immediate Global Rollout</div>
+              <div>
+                <span class="risk-tag risk-high">High</span><br>
+                <span class="risk-tag risk-high">Risk</span>
+              </div>
+            </div>
+            <div class="rejected-desc">Rejected due to unacceptable variance in CAC across un-tested regions.</div>
+          </div>
+          <div class="rejected-item">
+            <div class="rejected-header">
+              <div class="rejected-title">Status Quo (No Action)</div>
+              <div>
+                <span class="risk-tag risk-med">Strategic</span><br>
+                <span class="risk-tag risk-med">Decay</span>
+              </div>
+            </div>
+            <div class="rejected-desc">Rejected; results in unacceptable loss of market momentum.</div>
+          </div>
+        </div>
+      </div>
+      <!-- Surprise -->
+      <div class="surprise-panel">
+        <div class="rsp-label">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          <span style="color:var(--amber)">SURPRISE EVENT</span>
+        </div>
+        <p style="font-size:12px;color:var(--text3);margin-bottom:10px;line-height:1.5">Inject a new external variable to force the swarm to re-evaluate this decision.</p>
+        <textarea class="surprise-input" id="surprise-input" placeholder="e.g. 'Competitor X just slashed prices by 20% in the pilot region...'"></textarea>
+        <button class="btn-trigger" onclick="triggerSurprise()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg>
+          TRIGGER ADAPTATION
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     VIEW 5 – SWARM ANALYTICS
+════════════════════════════════════════ -->
+<div id="view-analytics" class="view">
+  <header class="topbar">
+    <div class="topbar-logo" onclick="showView('landing')">
+      <svg viewBox="0 0 28 28" fill="none"><polygon points="14,2 24,8 24,20 14,26 4,20 4,8" fill="none" stroke="#8b5cf6" stroke-width="1.5"/><circle cx="14" cy="14" r="4" fill="#7c3aed"/><line x1="14" y1="6" x2="14" y2="10" stroke="#8b5cf6" stroke-width="1.2"/><line x1="14" y1="18" x2="14" y2="22" stroke="#8b5cf6" stroke-width="1.2"/><line x1="7" y1="10" x2="11" y2="12" stroke="#8b5cf6" stroke-width="1.2"/><line x1="17" y1="16" x2="21" y2="18" stroke="#8b5cf6" stroke-width="1.2"/></svg>
+      Agentic Swarm
+    </div>
+    <nav class="topbar-nav">
+      <button onclick="showNavTab(this,'landing')">Executive Overview</button>
+      <button class="active">Swarm Analytics</button>
+      <button onclick="showNavTab(this,'risk')">Risk Audit</button>
+    </nav>
+    <div class="topbar-right">
+      <button class="btn-deploy" onclick="showView('landing')">← Back</button>
+    </div>
+  </header>
+  <div class="analytics-placeholder">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+    <div style="font-size:22px;font-weight:700;color:var(--text2)">Swarm Analytics</div>
+    <div>Run a boardroom session first to see agent performance metrics.</div>
+    <button class="btn-convene" style="margin-top:8px;padding:10px 24px;font-size:13px" onclick="showView('landing')">Initialize Swarm</button>
+  </div>
+</div>
+
+<!-- VIEW 6 – RISK AUDIT -->
+<div id="view-risk" class="view">
+  <header class="topbar">
+    <div class="topbar-logo" onclick="showView('landing')">
+      <svg viewBox="0 0 28 28" fill="none"><polygon points="14,2 24,8 24,20 14,26 4,20 4,8" fill="none" stroke="#8b5cf6" stroke-width="1.5"/><circle cx="14" cy="14" r="4" fill="#7c3aed"/></svg>
+      Agentic Swarm
+    </div>
+    <nav class="topbar-nav">
+      <button onclick="showNavTab(this,'landing')">Executive Overview</button>
+      <button onclick="showNavTab(this,'analytics')">Swarm Analytics</button>
+      <button class="active">Risk Audit</button>
+    </nav>
+    <div class="topbar-right">
+      <button class="btn-deploy" onclick="showView('landing')">← Back</button>
+    </div>
+  </header>
+  <div class="risk-placeholder">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+    <div style="font-size:22px;font-weight:700;color:var(--text2)">Risk Audit</div>
+    <div>Complete a boardroom session to generate the risk audit report.</div>
+    <button class="btn-convene" style="margin-top:8px;padding:10px 24px;font-size:13px" onclick="showView('landing')">Initialize Swarm</button>
+  </div>
+</div>
+
+<!-- Toast container -->
+<div class="toast-container" id="toast-container"></div>
+
+<script>
+/* ════════════════════════════════════════════
+   STATE
+════════════════════════════════════════════ */
+const STATE = {
+  currentView: 'landing',
+  problem: { company:'', industry:'', budget:'', statement:'' },
+  voiceEnabled: true,
+  paused: false,
+  stage: 'analyze',
+  debateCycle: 0,
+  sessionName: '',
+  transcriptLines: [],
+  traceEntries: [],
+  agents: [],
+  speakingAgent: null,
+  simulationTimer: null,
+  surpriseTriggered: false,
+};
+
+/* ════════════════════════════════════════════
+   AGENT DEFINITIONS
+════════════════════════════════════════════ */
+const AGENTS_DEF = [
+  { id:'nexus',    name:'Nexus',   codename:'Research Deep-Dive',  dept:'Research & Intelligence',     role:'Data Synthesizer',   icon:'🔬', color:'#06b6d4', abbr:'[RES-AGENT]',  pos:{x:25,  y:28} },
+  { id:'aura',     name:'Aura',    codename:'Finance Alpha',        dept:'Financial Modeling',          role:'Risk Analyst',       icon:'🏛', color:'#10b981', abbr:'[FIN-AGENT]',  pos:{x:72,  y:22} },
+  { id:'echo',     name:'Echo',    codename:'Marketing Synthesizer',dept:'Market Sentiment',            role:'Brand Strategist',   icon:'📡', color:'#f59e0b', abbr:'[MKT-AGENT]',  pos:{x:25,  y:72} },
+  { id:'cog',      name:'Cog',     codename:'Operations Vector',    dept:'Operations',                  role:'Logistics Optimizer',icon:'⚙️', color:'#3b82f6', abbr:'[OPS-AGENT]',  pos:{x:72,  y:75} },
+  { id:'vex',      name:'Vex',     codename:"Devil's Advocate",     dept:"Devil's Advocate",            role:'Stress Tester',      icon:'⚖️', color:'#ef4444', abbr:'[RISK-AGENT]', pos:{x:18,  y:50} },
+  { id:'prime',    name:'Prime',   codename:'CEO Node',             dept:'Chief Executive AI',          role:'Swarm Coordinator',  icon:'🧠', color:'#8b5cf6', abbr:'[CEO-AGENT]',  pos:{x:50,  y:47}, isDirector:true },
+];
+
+/* ════════════════════════════════════════════
+   DEMO SCENARIOS
+════════════════════════════════════════════ */
+const DEMO = {
+  company:'FreshMart Global',
+  industry:'Retail / Grocery',
+  budget:'£50M expansion budget',
+  statement:'FreshMart, a profitable UK grocery chain with 120 stores, is evaluating international expansion into Germany and Poland. We must decide whether to enter Germany, Poland, both markets, or redeploy the £50M capital domestically against rising competition from Whole Foods entering the UK premium segment.',
+};
+
+const DEMO_SCRIPT = [
+  { agent:'nexus',  stage:'analyze',   delay:800,  text:'Initiating market intelligence sweep. Germany grocery market valued at €240B with 2.3% CAGR. Discount segment dominated by Lidl/Aldi at 62% combined share. Premium fresh segment underserved — 18% market gap identified. Poland shows 4.1% CAGR, lower competition density, higher receptivity to loyalty programmes.' },
+  { agent:'aura',   stage:'analyze',   delay:1400, text:'Running financial model. Germany: £28M capex for 8 flagship stores, breakeven at Month 18. Poland: £15M capex for 12 stores, breakeven Month 14. Dual-market entry: £50M total, cash flow neutral by Month 22. Domestic reinvestment: projected 12% revenue uplift, breakeven immediate.' },
+  { agent:'echo',   stage:'analyze',   delay:900,  text:'Brand analysis complete. FreshMart loyalty programme — 2M UK members — is a transferable asset. German consumer NPS for premium-fresh concepts averages 71. Polish digital adoption rate 84%, ideal for loyalty app rollout. Recommend Poland-first for lower CAC and faster brand validation.' },
+  { agent:'cog',    stage:'analyze',   delay:1100, text:'Supply chain assessment: existing UK supplier network covers 60% of German SKU requirements. Polish cold-chain infrastructure requires £3.2M additional CAPEX investment. Staffing: Germany requires 340 FTEs, Poland 280. Lead time to first store opening: Germany 11 months, Poland 8 months.' },
+  { agent:'vex',    stage:'analyze',   delay:700,  text:"STRESS TEST INITIATED. Dual-market entry carries 34% probability of cash shortfall in Month 16 under pessimistic demand assumptions. Germany poses regulatory complexity — foreign retailer licensing averages 14 months. Poland's zloty exposure creates 8-12% FX variance risk on repatriated profits. I am flagging these as material risks." },
+  { agent:'nexus',  stage:'share',     delay:1000, text:"Sharing findings with Finance: Poland's 4.1% CAGR is supported by rising middle-class spending data. Transferring competitor entry timeline data — Lidl has announced 40 new Polish stores in 2025, which compresses our window of opportunity." },
+  { agent:'aura',   stage:'share',     delay:800,  text:"Acknowledging Research data. Adjusting Poland model to incorporate Lidl expansion pressure. Revised breakeven: Month 17. Germany model unchanged. Flagging to CEO: domestic option now shows strongest risk-adjusted IRR at 31% versus 22% for Poland-only." },
+  { agent:'echo',   stage:'share',     delay:600,  text:"Sharing consumer sentiment data with Operations. Polish loyalty app adoption projections updated to 67% penetration in Year 1. German marketing spend estimate: £4.2M for launch quarter. Transferring channel mix recommendations to CEO for synthesis." },
+  { agent:'vex',    stage:'challenge', delay:900,  text:"CHALLENGING Finance recommendation. The domestic IRR of 31% does not account for strategic erosion. If we cede Germany and Poland to Lidl/Aldi, we permanently foreclose a £240B market. The NPV of foregone optionality exceeds the short-term IRR advantage. I formally dispute the domestic-first conclusion." },
+  { agent:'aura',   stage:'challenge', delay:1200, text:"Responding to Devil's Advocate challenge. The optionality argument is noted but speculative. However, I will revise my model to include a Poland-only scenario with phased Germany entry in Year 2. Updated IRR: 26.4% — acceptable range. I partially concede the point. Withdrawing the domestic-only recommendation." },
+  { agent:'nexus',  stage:'challenge', delay:800,  text:"Supporting Vex's strategic concern. Historical data shows 73% of grocery chains that delay international entry by 3+ years fail to achieve target market share. Competitive window in Poland is 18 months. Germany window is 24 months. Time-sensitive action is warranted." },
+  { agent:'cog',    stage:'compare',   delay:1000, text:"Strategy A — Poland-only entry: 8-month lead time, £15M capex, 280 FTEs, Month-14 breakeven. Operationally feasible with existing supply chain. Strategy B — Germany-only entry: 11-month lead time, £28M capex, 340 FTEs, higher regulatory risk. Strategy C — Phased Poland-then-Germany: £50M over 24 months, lower simultaneous execution risk." },
+  { agent:'echo',   stage:'compare',   delay:700,  text:"Marketing comparison: Poland-first maximises loyalty app adoption rate and provides live market data for Germany entry calibration. Germany-first carries higher brand risk due to premium positioning against established discounters. Recommend Strategy C — phased approach — as optimal for brand integrity." },
+  { agent:'prime',  stage:'decide',    delay:1500, text:"Synthesizing all department inputs. Research confirms Poland strategic window is 18 months. Finance revised IRR to 26.4% for phased approach. Marketing endorses phased entry for brand integrity. Operations confirms Poland feasibility within 8 months. Devil's Advocate challenge accepted — domestic-only rejected on strategic grounds. DECISION: Phased expansion — Poland Year 1, Germany Year 2." },
+  { agent:'prime',  stage:'decide',    delay:800,  text:"CEO FINAL DECISION: Execute Poland market entry in Q1. Deploy £15M initial capex. Target 12 stores by Month 8. Activate loyalty programme digital rollout. Reserve £22M for Germany Year-2 entry contingent on Poland KPIs. Remaining £13M held as strategic reserve. KPI targets: 85% store occupancy by Month 6, CAC below £42, NPS above 65." },
+];
+
+const SURPRISE_SCRIPT = [
+  { agent:'vex',   delay:600,  text:"SURPRISE EVENT PROCESSED. Injecting new variable into risk model. Recalculating all assumptions against updated constraint." },
+  { agent:'aura',  delay:900,  text:"Financial model updated. Surprise variable materially impacts Year-1 cost structure. Revising Poland capex upward by 18%. Breakeven now Month 19. Germany entry timeline pushed to Month 30. Domestic reserve drops from £13M to £6M." },
+  { agent:'nexus', delay:700,  text:"Market intelligence updated. Competitor response analysis complete. Strategic window in Poland now reduced to 12 months. Recommend accelerated launch timeline to compensate for cost increase. Early-mover premium still exceeds revised cost burden." },
+  { agent:'echo',  delay:600,  text:"Brand strategy revised. Surprise event increases marketing spend requirement by 12%. Recommending partnership with local Polish retailer to reduce CAC and accelerate trust-building. Loyalty programme launch must be concurrent with store opening, not phased." },
+  { agent:'prime', delay:1200, text:"REVISED CEO DECISION post-surprise: Poland entry proceeds but with accelerated timeline — 6 months to first store. Partnership model adopted to offset cost increase. Germany entry deferred to Month 36. KPI targets revised: store occupancy 80% by Month 6 (revised from 85%), CAC ceiling raised to £52, NPS target maintained at 65+. Strategic rationale unchanged — competitive window preservation justifies revised economics." },
+];
+
+/* ════════════════════════════════════════════
+   VIEW NAVIGATION
+════════════════════════════════════════════ */
+function showView(name) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  const el = document.getElementById('view-' + name);
+  if (el) el.classList.add('active');
+  STATE.currentView = name;
+}
+
+function showNavTab(btn, viewName) {
+  // update active state in parent nav
+  const nav = btn.closest('nav');
+  if (nav) nav.querySelectorAll('button,a').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  showView(viewName);
+}
+
+/* ════════════════════════════════════════════
+   FORM HELPERS
+════════════════════════════════════════════ */
+function updateCharCount(el) {
+  const count = el.value.length;
+  document.getElementById('char-count').textContent = count;
+  if (count > 500) el.value = el.value.slice(0, 500);
+}
+
+function loadDemo() {
+  document.getElementById('inp-company').value   = DEMO.company;
+  document.getElementById('inp-industry').value  = DEMO.industry;
+  document.getElementById('inp-budget').value    = DEMO.budget;
+  document.getElementById('inp-problem').value   = DEMO.statement;
+  document.getElementById('char-count').textContent = DEMO.statement.length;
+  showToast('Demo case loaded — FreshMart International Expansion', 'info');
+}
+
+function conveneBoard() {
+  const company   = document.getElementById('inp-company').value.trim();
+  const industry  = document.getElementById('inp-industry').value.trim();
+  const budget    = document.getElementById('inp-budget').value.trim();
+  const statement = document.getElementById('inp-problem').value.trim();
+  if (!statement) { showToast('Please describe the business problem first.', 'error'); return; }
+  STATE.problem = { company, industry, budget, statement };
+  STATE.sessionName = company ? company + ' Strategy' : 'Strategic Boardroom Session';
+  showView('assembly');
+  runAssembly();
+}
+</script>
+<script>
+/* ════════════════════════════════════════════
+   ASSEMBLY ANIMATION
+════════════════════════════════════════════ */
+function buildAssemblyCards() {
+  const grid = document.getElementById('assembly-grid');
+  grid.innerHTML = '';
+  AGENTS_DEF.forEach(a => {
+    const card = document.createElement('div');
+    card.className = 'agent-card';
+    card.id = 'assembly-card-' + a.id;
+    card.innerHTML = `
+      <div class="agent-card-top">
+        <div class="agent-card-icon">${a.icon}</div>
+        <div class="agent-card-role" style="color:${a.color}">${a.dept}</div>
+      </div>
+      <div class="agent-card-name">${a.name}</div>
+      <div class="agent-card-dept">${a.codename}</div>
+      <div class="agent-card-footer">
+        <div class="agent-card-sub">${a.role}</div>
+        <div class="status-dot status-pending" id="astatus-${a.id}">Initializing</div>
+      </div>`;
+    grid.appendChild(card);
+  });
+}
+
+function runAssembly() {
+  buildAssemblyCards();
+  const bar   = document.getElementById('assembly-progress-bar');
+  const label = document.getElementById('assembly-progress-label');
+  const total = AGENTS_DEF.length;
+  let done = 0;
+
+  AGENTS_DEF.forEach((a, i) => {
+    setTimeout(() => {
+      const st = document.getElementById('astatus-' + a.id);
+      const card = document.getElementById('assembly-card-' + a.id);
+      if (st) { st.className = 'status-dot status-speaking'; st.textContent = 'Connecting'; }
+      setTimeout(() => {
+        if (st) { st.className = 'status-dot status-ready'; st.textContent = 'Ready'; }
+        if (card) card.classList.add('ready');
+        done++;
+        const pct = Math.round((done / total) * 100);
+        bar.style.width = pct + '%';
+        label.textContent = done < total ? `Initializing ${AGENTS_DEF[done]?.name || 'agents'}...` : 'All agents online — entering boardroom';
+        if (done === total) {
+          setTimeout(() => {
+            launchBoardroom();
+          }, 800);
+        }
+      }, 400 + Math.random() * 300);
+    }, i * 350);
+  });
+}
+
+/* ════════════════════════════════════════════
+   BOARDROOM CANVAS SETUP
+════════════════════════════════════════════ */
+function launchBoardroom() {
+  showView('boardroom');
+  // Set problem title
+  const title = STATE.problem.company
+    ? `${STATE.problem.company} — Strategy Decision`
+    : 'Boardroom Strategy Session';
+  const meta = STATE.problem.industry
+    ? `Industry: ${STATE.problem.industry}${STATE.problem.budget ? ' | Budget: ' + STATE.problem.budget : ''}`
+    : (STATE.problem.budget ? 'Budget: ' + STATE.problem.budget : 'Strategic Analysis Session');
+  document.getElementById('live-problem-title').textContent = title;
+  document.getElementById('live-problem-meta').textContent  = meta;
+  document.getElementById('sidebar-session-name').textContent = STATE.sessionName;
+  document.getElementById('dec-session-name').textContent = STATE.sessionName;
+  if (STATE.problem.budget) {
+    document.getElementById('live-budget-badge').textContent = 'Budget: ' + STATE.problem.budget;
+  }
+  STATE.transcriptLines = [];
+  STATE.traceEntries    = [];
+  STATE.stage           = 'analyze';
+  STATE.debateCycle     = 0;
+  renderCanvas();
+  startSimulation();
+}
+
+function renderCanvas() {
+  const nodesEl = document.getElementById('canvas-nodes');
+  const svgEl   = document.getElementById('connection-svg');
+  nodesEl.innerHTML = '';
+  svgEl.innerHTML   = '';
+
+  const canvasEl = document.getElementById('canvas-area');
+  const W = canvasEl.offsetWidth  || 800;
+  const H = canvasEl.offsetHeight || 420;
+
+  STATE.agents = AGENTS_DEF.map(a => ({
+    ...a,
+    px: (a.pos.x / 100) * W,
+    py: (a.pos.y / 100) * H,
+  }));
+
+  // Draw connection lines from each dept agent to CEO
+  const ceo = STATE.agents.find(a => a.isDirector);
+  STATE.agents.forEach(a => {
+    if (a.isDirector) return;
+    const line = document.createElementNS('http://www.w3.org/2000/svg','line');
+    line.setAttribute('x1', a.px); line.setAttribute('y1', a.py);
+    line.setAttribute('x2', ceo.px); line.setAttribute('y2', ceo.py);
+    line.className = 'connection-line';
+    line.id = 'line-' + a.id + '-ceo';
+    svgEl.appendChild(line);
+  });
+
+  // Render nodes
+  STATE.agents.forEach(a => {
+    const node = document.createElement('div');
+    node.className = 'canvas-node' + (a.isDirector ? ' director' : '');
+    node.id = 'node-' + a.id;
+    node.style.left = a.px + 'px';
+    node.style.top  = a.py + 'px';
+    node.innerHTML = `
+      <div class="node-box" style="border-color:${a.color}22">
+        <span style="font-size:24px">${a.icon}</span>
+      </div>
+      <div class="node-label" style="color:${a.color}">${a.name.toUpperCase()}${a.isDirector ? '<br><span style="color:var(--text3)">(DIRECTOR)</span>' : ''}</div>`;
+    node.addEventListener('click', () => showAgentPopup(a));
+    nodesEl.appendChild(node);
+  });
+}
+
+/* ════════════════════════════════════════════
+   SIMULATION ENGINE
+════════════════════════════════════════════ */
+const STAGES_ORDER = ['analyze','share','challenge','compare','decide'];
+
+function startSimulation() {
+  let lineIndex = 0;
+  const script  = DEMO_SCRIPT;
+
+  function scheduleNext() {
+    if (lineIndex >= script.length || STATE.paused) {
+      if (lineIndex >= script.length) onSimulationComplete();
+      return;
+    }
+    const entry = script[lineIndex++];
+    const delay = entry.delay + (STATE.paused ? 99999 : 0);
+    STATE.simulationTimer = setTimeout(() => {
+      if (STATE.paused) { lineIndex--; return; }
+      // update stage
+      if (entry.stage && entry.stage !== STATE.stage) {
+        STATE.stage = entry.stage;
+        updateStageUI(entry.stage);
+      }
+      speak(entry.agent, entry.text, () => {
+        addTranscriptLine(entry.agent, entry.text, entry.stage);
+        addTraceEntry(entry.agent, entry.text);
+        scheduleNext();
+      });
+    }, delay);
+  }
+  scheduleNext();
+}
+
+function onSimulationComplete() {
+  document.getElementById('decide-nav-btn').style.display = '';
+  updateStageUI('decide');
+  showToast('Boardroom session complete — decision ready', 'success');
+  buildDecisionView();
+  setTimeout(() => showView('decision'), 1800);
+}
+
+function updateStageUI(stage) {
+  STATE.stage = stage;
+  const stages = ['analyze','share','challenge','compare','decide'];
+  const labels = { analyze:'ROUND 1 · ANALYSIS', share:'ROUND 2 · SHARING', challenge:'ROUND 3 · CHALLENGE', compare:'ROUND 4 · COMPARE', decide:'ROUND 5 · DECIDE' };
+  const badge = document.getElementById('round-badge');
+  if (badge && labels[stage]) badge.textContent = labels[stage];
+
+  // Stage trail
+  stages.forEach(s => {
+    const el = document.getElementById('st-' + s);
+    if (!el) return;
+    const idx = stages.indexOf(s);
+    const cur = stages.indexOf(stage);
+    el.classList.remove('active','done');
+    if (idx === cur) { el.classList.add('active'); el.textContent = '● ' + s.toUpperCase(); }
+    else if (idx < cur) { el.classList.add('done'); el.textContent = s.toUpperCase(); }
+    else { el.textContent = s.toUpperCase(); }
+  });
+
+  // Sidebar nav
+  stages.forEach(s => {
+    const btn = document.getElementById('sb-' + s);
+    if (!btn) return;
+    const idx = stages.indexOf(s);
+    const cur = stages.indexOf(stage);
+    btn.classList.toggle('active', idx === cur);
+  });
+}
+
+function setSidebarStage(stage) {
+  updateStageUI(stage);
+}
+
+/* ════════════════════════════════════════════
+   SPEAKING & TRANSCRIPT
+════════════════════════════════════════════ */
+function speak(agentId, text, callback) {
+  const agent = STATE.agents.find(a => a.id === agentId);
+  if (!agent) { if(callback) callback(); return; }
+
+  // Highlight node as speaking
+  setNodeSpeaking(agentId, true);
+
+  // Activate connection line
+  const lineEl = document.getElementById('line-' + agentId + '-ceo');
+  if (lineEl) { lineEl.classList.add('active'); }
+
+  // Browser TTS
+  if (STATE.voiceEnabled && 'speechSynthesis' in window) {
+    window.speechSynthesis.cancel();
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.rate  = agentId === 'prime' ? 0.88 : (agentId === 'vex' ? 1.05 : 0.95);
+    utter.pitch = agentId === 'prime' ? 0.8  : (agentId === 'aura' ? 0.9 : 1.0);
+    const voices = window.speechSynthesis.getVoices();
+    if (voices.length > 0) {
+      // assign different voices per agent
+      const voiceMap = { nexus:0, aura:2, echo:1, cog:3, vex:4, prime:1 };
+      const vi = voiceMap[agentId] || 0;
+      utter.voice = voices[vi % voices.length] || voices[0];
+    }
+    utter.onend = () => {
+      setNodeSpeaking(agentId, false);
+      if (lineEl) lineEl.classList.remove('active');
+      if (callback) callback();
+    };
+    utter.onerror = () => {
+      setNodeSpeaking(agentId, false);
+      if (lineEl) lineEl.classList.remove('active');
+      if (callback) callback();
+    };
+    window.speechSynthesis.speak(utter);
+  } else {
+    // Simulate speaking duration without audio
+    const duration = Math.min(Math.max(text.length * 28, 800), 3200);
+    setTimeout(() => {
+      setNodeSpeaking(agentId, false);
+      if (lineEl) lineEl.classList.remove('active');
+      if (callback) callback();
+    }, duration);
+  }
+}
+
+function setNodeSpeaking(agentId, active) {
+  const node = document.getElementById('node-' + agentId);
+  if (!node) return;
+  if (active) {
+    node.classList.add('speaking');
+    const label = node.querySelector('.node-label');
+    const box   = node.querySelector('.node-box');
+    // add speaking badge
+    let badge = box.querySelector('.node-speaking-badge');
+    if (!badge) {
+      badge = document.createElement('div');
+      badge.className = 'node-speaking-badge';
+      box.appendChild(badge);
+    }
+    const a = STATE.agents.find(a => a.id === agentId);
+    badge.textContent = (a ? a.name.toUpperCase() : agentId.toUpperCase()) + ' (SPEAKING)';
+    badge.style.background = a ? a.color : 'var(--amber)';
+    STATE.speakingAgent = agentId;
+  } else {
+    node.classList.remove('speaking');
+    const badge = node.querySelector('.node-speaking-badge');
+    if (badge) badge.remove();
+    if (STATE.speakingAgent === agentId) STATE.speakingAgent = null;
+  }
+}
+
+function addTranscriptLine(agentId, text, stage) {
+  const agent = STATE.agents.find(a => a.id === agentId) || AGENTS_DEF.find(a => a.id === agentId);
+  const now   = new Date();
+  const time  = now.toTimeString().slice(0,8);
+  const abbr  = agent ? agent.abbr : '[AGENT]';
+  const color = agent ? agent.color : 'var(--text2)';
+  const isChallenge = stage === 'challenge';
+  const isCEO = agentId === 'prime';
+
+  STATE.transcriptLines.push({ time, abbr, color, text, isChallenge, isCEO });
+
+  const container = document.getElementById('transcript-scroll');
+  if (!container) return;
+
+  const line = document.createElement('div');
+  line.className = 'transcript-line';
+  line.innerHTML = `
+    <div class="t-time">${time}</div>
+    <div class="t-agent" style="color:${color}">${abbr.replace('[','').replace(']','')}</div>
+    <div class="t-text${isCEO || isChallenge ? ' highlight' : ''}">${text}</div>`;
+  container.appendChild(line);
+  container.scrollTop = container.scrollHeight;
+}
+
+function addTraceEntry(agentId, text) {
+  const agent = STATE.agents.find(a => a.id === agentId) || AGENTS_DEF.find(a => a.id === agentId);
+  const now   = new Date();
+  const time  = '[' + now.toTimeString().slice(0,8) + ']';
+  const abbr  = agent ? agent.abbr : '[AGENT]';
+  const color = agent ? agent.color : 'var(--text2)';
+  const short = text.length > 90 ? text.slice(0, 90) + '…' : text;
+  STATE.traceEntries.push({ time, abbr, color, text: short });
+}
+
+/* ════════════════════════════════════════════
+   CONTROLS
+════════════════════════════════════════════ */
+function toggleVoice() {
+  STATE.voiceEnabled = !STATE.voiceEnabled;
+  const btn = document.getElementById('btn-voice-toggle');
+  if (btn) {
+    btn.textContent = STATE.voiceEnabled ? '🔊' : '🔇';
+    btn.classList.toggle('active', STATE.voiceEnabled);
+  }
+  if (!STATE.voiceEnabled && 'speechSynthesis' in window) window.speechSynthesis.cancel();
+  showToast(STATE.voiceEnabled ? 'Voice enabled' : 'Voice muted', 'info');
+}
+
+function togglePause() {
+  STATE.paused = !STATE.paused;
+  const btn = document.getElementById('btn-pause-play');
+  if (btn) btn.textContent = STATE.paused ? '▶' : '⏸';
+  if (!STATE.paused) startSimulation();
+  showToast(STATE.paused ? 'Session paused' : 'Session resumed', 'info');
+}
+
+/* ════════════════════════════════════════════
+   DECISION VIEW BUILD
+════════════════════════════════════════════ */
+function buildDecisionView() {
+  // Populate trace
+  const traceEl = document.getElementById('trace-lines');
+  if (traceEl) {
+    traceEl.innerHTML = '';
+    STATE.traceEntries.forEach(e => {
+      const row = document.createElement('div');
+      row.className = 'trace-entry';
+      row.innerHTML = `<div class="te-time">${e.time}</div><div class="te-agent" style="color:${e.color}">${e.abbr}</div><div class="te-text">${e.text}</div>`;
+      traceEl.appendChild(row);
+    });
+  }
+  // Update counts
+  document.getElementById('dec-agent-count').textContent = AGENTS_DEF.length;
+  // Customize KPIs based on problem
+  if (STATE.problem.company.toLowerCase().includes('fresh') || STATE.problem.industry.toLowerCase().includes('retail')) {
+    document.getElementById('kpi-revenue').textContent     = '£38.4M';
+    document.getElementById('kpi-revenue-change').textContent = '+18% vs Baseline';
+    document.getElementById('kpi-cac').textContent         = '£42';
+    document.getElementById('kpi-conversion').textContent  = '6.8%';
+    document.getElementById('kpi-conv-label').textContent  = 'Loyalty app uptake';
+    document.getElementById('ceo-decision-text').textContent = 'Phase 1: Poland market entry (Q1) → Germany (Year 2)';
+    document.getElementById('dec-research-evidence').textContent = 'Poland grocery market CAGR of 4.1% with an 18-month competitive window before Lidl expansion closes the premium gap. Consumer NPS for premium-fresh concept averages 71 in target demographics.';
+    document.getElementById('dec-finance-evidence').textContent  = 'Poland capex of £15M achieves breakeven at Month 14. Phased approach preserves £22M Germany reserve and £13M strategic buffer. Risk-adjusted IRR of 26.4% — within acceptable parameters.';
+  }
+}
+
+/* ════════════════════════════════════════════
+   SURPRISE ROUND
+════════════════════════════════════════════ */
+function triggerSurprise() {
+  const text = document.getElementById('surprise-input').value.trim();
+  if (!text) { showToast('Please describe the surprise event first.', 'error'); return; }
+  STATE.surpriseTriggered = true;
+  showToast('Surprise injected — re-running affected agents...', 'info');
+  // Switch to boardroom for re-run
+  showView('boardroom');
+  updateStageUI('analyze');
+  document.getElementById('round-badge').textContent = 'SURPRISE · ADAPTATION';
+  // Add surprise notice to transcript
+  addTranscriptLine('prime', `⚡ SURPRISE EVENT INJECTED: "${text}"`, 'surprise');
+  // Run surprise script
+  let idx = 0;
+  function next() {
+    if (idx >= SURPRISE_SCRIPT.length) {
+      showToast('Surprise adaptation complete — revised decision ready', 'success');
+      buildSurpriseDecision(text);
+      setTimeout(() => showView('decision'), 1800);
+      return;
+    }
+    const entry = SURPRISE_SCRIPT[idx++];
+    setTimeout(() => {
+      speak(entry.agent, entry.text, () => {
+        addTranscriptLine(entry.agent, entry.text, 'surprise');
+        addTraceEntry(entry.agent, entry.text);
+        next();
+      });
+    }, entry.delay);
+  }
+  next();
+}
+
+function buildSurpriseDecision(surpriseText) {
+  document.getElementById('ceo-decision-text').textContent = 'REVISED: Accelerated Poland entry (6-month) + Partnership model + Germany deferred to Month 36';
+  document.getElementById('dec-research-evidence').textContent = 'Strategic window compressed to 12 months post-surprise. Early-mover premium still exceeds revised cost burden. Partnership model reduces CAC by 22%.';
+  document.getElementById('dec-finance-evidence').textContent  = 'Surprise increases Year-1 capex by 18% to £17.7M. Breakeven revised to Month 19. Germany reserve reduced. Domestic buffer now £6M — operational minimum.';
+  document.getElementById('kpi-revenue').textContent     = '£31.2M';
+  document.getElementById('kpi-revenue-change').textContent = '+8% vs Revised Baseline';
+  document.getElementById('kpi-cac').textContent         = '£52';
+  document.getElementById('kpi-conversion').textContent  = '7.1%';
+  // Add surprise to trace
+  addTraceEntry('prime', `SURPRISE PROCESSED: ${surpriseText.slice(0,60)}… — Decision revised.`);
+  buildDecisionView();
+}
+
+/* ════════════════════════════════════════════
+   REPORT DOWNLOAD
+════════════════════════════════════════════ */
+function downloadReport() {
+  const lines = ['AGENTIC SWARM – BOARDROOM DECISION REPORT', '='.repeat(50), ''];
+  lines.push('Session: ' + STATE.sessionName);
+  lines.push('Problem: ' + (STATE.problem.statement || 'See brief'));
+  lines.push('');
+  lines.push('── AGENT SWARM TRANSCRIPT ──');
+  STATE.transcriptLines.forEach(l => lines.push(`${l.time}  ${l.abbr.padEnd(14)}${l.text}`));
+  lines.push('');
+  lines.push('── CEO FINAL DECISION ──');
+  lines.push(document.getElementById('ceo-decision-text')?.textContent || '');
+  lines.push('');
+  lines.push('── KPIs ──');
+  lines.push('Revenue Target : ' + (document.getElementById('kpi-revenue')?.textContent || ''));
+  lines.push('Est. CAC       : ' + (document.getElementById('kpi-cac')?.textContent || ''));
+  lines.push('Conversion Rate: ' + (document.getElementById('kpi-conversion')?.textContent || ''));
+  const blob = new Blob([lines.join('\n')], { type:'text/plain' });
+  const a    = document.createElement('a');
+  a.href     = URL.createObjectURL(blob);
+  a.download = 'AgenticSwarm_BoardroomReport.txt';
+  a.click();
+  showToast('Report downloaded', 'success');
+}
+
+/* ════════════════════════════════════════════
+   TOAST
+════════════════════════════════════════════ */
+function showToast(msg, type='info') {
+  const container = document.getElementById('toast-container');
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  toast.textContent = msg;
+  container.appendChild(toast);
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateY(8px)';
+    toast.style.transition = 'all .3s';
+    setTimeout(() => toast.remove(), 300);
+  }, 3000);
+}
+
+/* ════════════════════════════════════════════
+   AGENT POPUP (click on node)
+════════════════════════════════════════════ */
+function showAgentPopup(agent) {
+  // Simple inline tooltip — remove existing
+  const existing = document.getElementById('agent-popup');
+  if (existing) existing.remove();
+
+  const lines = STATE.transcriptLines.filter(l => l.abbr.toLowerCase().includes(agent.name.slice(0,3).toLowerCase()));
+  const popup = document.createElement('div');
+  popup.id = 'agent-popup';
+  popup.style.cssText = `
+    position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
+    background:var(--bg2);border:1px solid ${agent.color};border-radius:14px;
+    padding:24px;width:480px;max-width:90vw;z-index:9999;
+    box-shadow:0 16px 48px rgba(0,0,0,.6);
+  `;
+  popup.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="font-size:28px">${agent.icon}</span>
+        <div>
+          <div style="font-size:18px;font-weight:700;color:${agent.color}">${agent.name}</div>
+          <div style="font-size:12px;color:var(--text3)">${agent.codename} · ${agent.role}</div>
+        </div>
+      </div>
+      <button onclick="document.getElementById('agent-popup').remove()" style="background:none;color:var(--text3);font-size:20px;padding:4px 8px;border-radius:6px;cursor:pointer">×</button>
+    </div>
+    <div style="font-size:11px;font-weight:700;letter-spacing:.08em;color:var(--text3);text-transform:uppercase;margin-bottom:8px">CONTRIBUTIONS (${lines.length})</div>
+    <div style="max-height:200px;overflow-y:auto;display:flex;flex-direction:column;gap:6px">
+      ${lines.length ? lines.map(l => `<div style="background:var(--bg3);border-radius:7px;padding:10px 12px;font-size:12px;color:var(--text2);line-height:1.5"><span style="color:var(--text3);font-family:var(--mono);font-size:10px">${l.time}</span><br>${l.text}</div>`).join('') : '<div style="color:var(--text3);font-size:12px">No contributions yet in this session.</div>'}
+    </div>`;
+  document.body.appendChild(popup);
+  popup.addEventListener('click', e => e.stopPropagation());
+  document.addEventListener('click', function closePopup() {
+    popup.remove();
+    document.removeEventListener('click', closePopup);
+  });
+}
+
+/* ════════════════════════════════════════════
+   INIT
+════════════════════════════════════════════ */
+window.addEventListener('DOMContentLoaded', () => {
+  // Load voices async
+  if ('speechSynthesis' in window) {
+    window.speechSynthesis.getVoices();
+    window.speechSynthesis.addEventListener('voiceschanged', () => {});
+  }
+  showView('landing');
+});
+</script>
+</body>
+</html>
