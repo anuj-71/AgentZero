@@ -301,6 +301,7 @@ textarea.form-input{resize:none;height:130px;line-height:1.5}
 ══════════════════════════════════════════════ */
 #view-boardroom{background:var(--bg)}
 #view-boardroom.active{flex-direction:column}
+.boardroom-content{flex:1;display:flex;overflow:hidden}
 .boardroom-main{flex:1;display:flex;flex-direction:column;min-width:0}
 .boardroom-header{
   padding:16px 24px;border-bottom:1px solid var(--border);
@@ -379,8 +380,9 @@ textarea.form-input{resize:none;height:130px;line-height:1.5}
 
 /* Transcript panel */
 .transcript-panel{
-  flex-shrink:0;height:220px;background:var(--bg2);
-  border-top:1px solid var(--border);display:flex;flex-direction:column;
+  width:340px;min-width:340px;background:var(--bg2);
+  border-left:1px solid var(--border);display:flex;flex-direction:column;
+  flex-shrink:0;
 }
 .transcript-header{
   display:flex;align-items:center;justify-content:space-between;
@@ -401,15 +403,25 @@ textarea.form-input{resize:none;height:130px;line-height:1.5}
 @keyframes recBlink{0%,100%{opacity:1}50%{opacity:.2}}
 .transcript-scroll{flex:1;overflow-y:auto;padding:8px 0}
 .transcript-line{
-  display:grid;grid-template-columns:56px 90px 1fr;
+  display:grid;grid-template-columns:56px 90px 1fr 32px;
   gap:0;padding:5px 18px;font-size:12px;font-family:var(--mono);
-  align-items:start;transition:background .1s;
+  align-items:start;transition:background .1s;position:relative;
 }
 .transcript-line:hover{background:rgba(255,255,255,.03)}
 .t-time{color:var(--text3);font-size:11px;padding-top:1px}
 .t-agent{font-weight:700;font-size:11px;padding-top:1px}
 .t-text{color:var(--text2);line-height:1.5;font-size:12px;font-family:var(--sans)}
 .t-text.highlight{color:var(--text)}
+.t-skip{
+  opacity:0;transition:opacity .15s;
+  background:var(--bg4);border:1px solid var(--border);
+  color:var(--text3);font-size:10px;font-weight:600;
+  padding:3px 8px;border-radius:4px;cursor:pointer;
+  white-space:nowrap;
+}
+.transcript-line:hover .t-skip{opacity:1}
+.transcript-line.speaking .t-skip{opacity:1;border-color:var(--amber);color:var(--amber)}
+.t-skip:hover{background:var(--bg3);border-color:var(--purple);color:var(--purple3)}
 </style>
 <style>
 /* ══════════════════════════════════════════════
@@ -513,15 +525,21 @@ textarea.form-input{resize:none;height:130px;line-height:1.5}
 .risk-high{background:rgba(239,68,68,.2);color:var(--red)}
 .risk-med{background:rgba(245,158,11,.2);color:var(--amber)}
 .rejected-desc{font-size:11px;color:var(--text3);line-height:1.5}
-.surprise-panel{padding:20px}
-.surprise-input{
-  width:100%;background:var(--bg3);border:1px solid var(--border);
-  border-radius:8px;color:var(--text);font-size:12px;
-  padding:10px 12px;resize:none;height:90px;line-height:1.5;
-  margin-bottom:10px;
+.surprise-panel{padding:16px;overflow-y:auto}
+.surp-btn{
+  background:var(--bg4);border:1px solid var(--border);color:var(--text3);
+  font-size:11px;font-weight:600;padding:6px 5px;border-radius:7px;
+  cursor:pointer;width:100%;text-align:center;transition:all .15s;
 }
-.surprise-input::placeholder{color:var(--text3)}
-.surprise-input:focus{border-color:var(--purple)}
+.surp-btn:hover{border-color:var(--amber);color:var(--amber)}
+.surp-btn.active{background:rgba(245,158,11,.12);border-color:var(--amber);color:var(--amber)}
+.surp-sev{
+  background:var(--bg4);border:1px solid var(--border);color:var(--text3);
+  font-size:11px;font-weight:600;padding:5px 4px;border-radius:7px;
+  cursor:pointer;width:100%;text-align:center;transition:all .15s;
+}
+.surp-sev:hover{border-color:var(--purple);color:var(--purple3)}
+.surp-sev.active{background:rgba(124,58,237,.15);border-color:var(--purple2);color:var(--purple3)}
 .btn-trigger{
   width:100%;background:var(--bg3);border:1px solid var(--border);
   color:var(--text2);font-size:12px;font-weight:600;
@@ -617,6 +635,8 @@ textarea.form-input{resize:none;height:130px;line-height:1.5}
 .analytics-placeholder svg,.risk-placeholder svg{width:56px;height:56px;opacity:.25}
 </style>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
 </head>
 <body>
 
@@ -628,14 +648,19 @@ textarea.form-input{resize:none;height:130px;line-height:1.5}
   <header class="topbar">
     <div class="topbar-logo" onclick="showView('landing')">
       <svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <polygon points="14,2 24,8 24,20 14,26 4,20 4,8" fill="none" stroke="#8b5cf6" stroke-width="1.5"/>
-        <circle cx="14" cy="14" r="4" fill="#7c3aed"/>
-        <line x1="14" y1="6" x2="14" y2="10" stroke="#8b5cf6" stroke-width="1.2"/>
-        <line x1="14" y1="18" x2="14" y2="22" stroke="#8b5cf6" stroke-width="1.2"/>
-        <line x1="7" y1="10" x2="11" y2="12" stroke="#8b5cf6" stroke-width="1.2"/>
-        <line x1="17" y1="16" x2="21" y2="18" stroke="#8b5cf6" stroke-width="1.2"/>
-        <line x1="21" y1="10" x2="17" y2="12" stroke="#8b5cf6" stroke-width="1.2"/>
-        <line x1="7" y1="18" x2="11" y2="16" stroke="#8b5cf6" stroke-width="1.2"/>
+        <!-- Boardroom table (oval) -->
+        <ellipse cx="14" cy="14" rx="11" ry="7" fill="none" stroke="#8b5cf6" stroke-width="1.5"/>
+        <!-- Chairs/seats around table -->
+        <circle cx="14" cy="6" r="1.5" fill="#7c3aed"/>
+        <circle cx="8" cy="9" r="1.5" fill="#7c3aed"/>
+        <circle cx="5" cy="14" r="1.5" fill="#7c3aed"/>
+        <circle cx="8" cy="19" r="1.5" fill="#7c3aed"/>
+        <circle cx="14" cy="22" r="1.5" fill="#7c3aed"/>
+        <circle cx="20" cy="19" r="1.5" fill="#7c3aed"/>
+        <circle cx="23" cy="14" r="1.5" fill="#7c3aed"/>
+        <circle cx="20" cy="9" r="1.5" fill="#7c3aed"/>
+        <!-- Center accent -->
+        <circle cx="14" cy="14" r="2" fill="#a78bfa" opacity="0.6"/>
       </svg>
       AGENTIC SWARM
     </div>
@@ -892,35 +917,38 @@ textarea.form-input{resize:none;height:130px;line-height:1.5}
       </div>
     </aside>
 
-    <!-- Main boardroom area -->
-    <div class="boardroom-main">
-      <div class="boardroom-header">
-        <div>
-          <div class="boardroom-title" id="live-problem-title">Market Expansion Strategy</div>
-          <div class="boardroom-meta" id="live-problem-meta">Target: APAC Region | Timeline: Q3 2024</div>
+    <div class="boardroom-content">
+      <!-- Main boardroom area -->
+      <div class="boardroom-main">
+        <div class="boardroom-header">
+          <div>
+            <div class="boardroom-title" id="live-problem-title">Market Expansion Strategy</div>
+            <div class="boardroom-meta" id="live-problem-meta">Target: APAC Region | Timeline: Q3 2024</div>
+          </div>
+          <div class="stage-trail">
+            <span class="stage-item active" id="st-analyze">● ANALYZE</span>
+            <span class="stage-sep">/</span>
+            <span class="stage-item" id="st-share">SHARE</span>
+            <span class="stage-sep">/</span>
+            <span class="stage-item" id="st-challenge">CHALLENGE</span>
+            <span class="stage-sep">/</span>
+            <span class="stage-item" id="st-compare">COMPARE</span>
+            <span class="stage-sep">/</span>
+            <span class="stage-item" id="st-decide">DECIDE</span>
+          </div>
         </div>
-        <div class="stage-trail">
-          <span class="stage-item active" id="st-analyze">● ANALYZE</span>
-          <span class="stage-sep">/</span>
-          <span class="stage-item" id="st-share">SHARE</span>
-          <span class="stage-sep">/</span>
-          <span class="stage-item" id="st-challenge">CHALLENGE</span>
-          <span class="stage-sep">/</span>
-          <span class="stage-item" id="st-compare">COMPARE</span>
-          <span class="stage-sep">/</span>
-          <span class="stage-item" id="st-decide">DECIDE</span>
-        </div>
-      </div>
 
-      <!-- Canvas -->
-      <div class="canvas-area" id="canvas-area">
-        <div class="canvas-grid"></div>
-        <svg class="connection-svg" id="connection-svg"></svg>
-        <div class="canvas-nodes" id="canvas-nodes"></div>
-        <div class="canvas-controls">
-          <button class="canvas-ctrl-btn" id="btn-voice-toggle" onclick="toggleVoice()" title="Toggle Voice">🔊</button>
-          <button class="canvas-ctrl-btn active" id="btn-pause-play" onclick="togglePause()" title="Pause/Resume">⏸</button>
-          <button class="canvas-ctrl-btn" id="btn-mic" title="Voice Input">🎤</button>
+        <!-- Canvas -->
+        <div class="canvas-area" id="canvas-area">
+          <div class="canvas-grid"></div>
+          <svg class="connection-svg" id="connection-svg"></svg>
+          <div class="canvas-nodes" id="canvas-nodes"></div>
+          <div class="canvas-controls">
+            <button class="canvas-ctrl-btn" id="btn-voice-toggle" onclick="toggleVoice()" title="Toggle Voice">🔊</button>
+            <button class="canvas-ctrl-btn" id="btn-speed-toggle" onclick="toggleSpeed2x()" title="Toggle 2x Speed">1×</button>
+            <button class="canvas-ctrl-btn active" id="btn-pause-play" onclick="togglePause()" title="Pause/Resume">⏸</button>
+            <button class="canvas-ctrl-btn" id="btn-mic" title="Voice Input">🎤</button>
+          </div>
         </div>
       </div>
 
@@ -1156,10 +1184,90 @@ textarea.form-input{resize:none;height:130px;line-height:1.5}
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
           <span style="color:var(--amber)">SURPRISE EVENT</span>
         </div>
-        <p style="font-size:12px;color:var(--text3);margin-bottom:10px;line-height:1.5">Inject a new external variable to force the swarm to re-evaluate this decision.</p>
-        <textarea class="surprise-input" id="surprise-input" placeholder="e.g. 'Competitor X just slashed prices by 20% in the pilot region...'"></textarea>
+        <p style="font-size:11px;color:var(--text3);margin-bottom:10px;line-height:1.5">Inject a business change — the swarm re-evaluates and revises the CEO decision.</p>
+
+        <div style="margin-bottom:10px">
+          <div class="form-label" style="margin-bottom:6px">CHANGE TYPE</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px">
+            <button class="surp-btn active" data-t="budget"     onclick="setSurpType(this,'budget')">💸 Budget Cut</button>
+            <button class="surp-btn"        data-t="competitor" onclick="setSurpType(this,'competitor')">🏴 Competitor</button>
+            <button class="surp-btn"        data-t="supply"     onclick="setSurpType(this,'supply')">🚚 Supply Chain</button>
+            <button class="surp-btn"        data-t="demand"     onclick="setSurpType(this,'demand')">📈 Demand Shift</button>
+            <button class="surp-btn"        data-t="regulatory" onclick="setSurpType(this,'regulatory')">⚖️ Regulation</button>
+            <button class="surp-btn"        data-t="custom"     onclick="setSurpType(this,'custom')">✏️ Custom</button>
+          </div>
+        </div>
+
+        <div id="sf-budget">
+          <div class="form-label" style="margin-bottom:4px">BUDGET REDUCTION</div>
+          <select id="sb-pct" class="form-input" style="width:100%;margin-bottom:8px;padding:7px 10px;font-size:12px">
+            <option value="10">−10% (minor cut)</option>
+            <option value="20" selected>−20% (significant cut)</option>
+            <option value="30">−30% (severe cut)</option>
+            <option value="50">−50% (critical cut)</option>
+          </select>
+          <div class="form-label" style="margin-bottom:4px">REASON</div>
+          <input id="sb-reason" class="form-input" style="width:100%;margin-bottom:8px;font-size:12px" value="Board reduced expansion budget due to domestic market pressures." placeholder="Why was budget cut?">
+        </div>
+        <div id="sf-competitor" style="display:none">
+          <div class="form-label" style="margin-bottom:4px">COMPETITOR</div>
+          <input id="sc-name" class="form-input" style="width:100%;margin-bottom:8px;font-size:12px" value="Amazon Fresh" placeholder="Competitor name">
+          <div class="form-label" style="margin-bottom:4px">ACTION</div>
+          <select id="sc-action" class="form-input" style="width:100%;margin-bottom:8px;padding:7px 10px;font-size:12px">
+            <option>Slashed prices by 20% in target market</option>
+            <option>Announced 50 new stores in our target region</option>
+            <option>Launched a loyalty programme targeting our customers</option>
+            <option>Acquired a key local competitor</option>
+          </select>
+        </div>
+        <div id="sf-supply" style="display:none">
+          <div class="form-label" style="margin-bottom:4px">DISRUPTION</div>
+          <select id="ss-type" class="form-input" style="width:100%;margin-bottom:8px;padding:7px 10px;font-size:12px">
+            <option>Key supplier insolvent — 40% of supply at risk</option>
+            <option>Port strikes — 6-month logistics delay</option>
+            <option>Raw material costs up 35%</option>
+            <option>Lead times doubled due to capacity cuts</option>
+          </select>
+          <div class="form-label" style="margin-bottom:4px">EXTRA COST (£M)</div>
+          <input id="ss-cost" class="form-input" style="width:100%;margin-bottom:8px;font-size:12px" value="8" placeholder="e.g. 8">
+        </div>
+        <div id="sf-demand" style="display:none">
+          <div class="form-label" style="margin-bottom:4px">DEMAND CHANGE</div>
+          <select id="sd-dir" class="form-input" style="width:100%;margin-bottom:8px;padding:7px 10px;font-size:12px">
+            <option>+40% demand spike — infrastructure not ready</option>
+            <option>−30% demand drop — negative consumer sentiment</option>
+            <option>+20% demand in secondary market only</option>
+          </select>
+          <div class="form-label" style="margin-bottom:4px">MARKET AFFECTED</div>
+          <input id="sd-mkt" class="form-input" style="width:100%;margin-bottom:8px;font-size:12px" value="Poland" placeholder="e.g. Poland, Germany...">
+        </div>
+        <div id="sf-regulatory" style="display:none">
+          <div class="form-label" style="margin-bottom:4px">REGULATION</div>
+          <select id="sr-type" class="form-input" style="width:100%;margin-bottom:8px;padding:7px 10px;font-size:12px">
+            <option>New foreign retailer licensing — 14-month delay</option>
+            <option>Data localisation law — £5M IT overhaul required</option>
+            <option>Environmental compliance — packaging rehaul</option>
+            <option>Import tariffs raised 15% on key product lines</option>
+          </select>
+          <div class="form-label" style="margin-bottom:4px">MARKET AFFECTED</div>
+          <input id="sr-mkt" class="form-input" style="width:100%;margin-bottom:8px;font-size:12px" value="Germany" placeholder="e.g. Germany, Poland...">
+        </div>
+        <div id="sf-custom" style="display:none">
+          <div class="form-label" style="margin-bottom:4px">DESCRIBE THE CHANGE</div>
+          <textarea id="sc-text" class="form-input" style="width:100%;height:72px;resize:none;font-size:12px;margin-bottom:8px" placeholder="e.g. A key investor withdrew £10M from the round..."></textarea>
+        </div>
+
+        <div style="margin-bottom:10px">
+          <div class="form-label" style="margin-bottom:5px">SEVERITY</div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:5px">
+            <button class="surp-sev" data-s="low"    onclick="setSurpSev(this)">🟢 Low</button>
+            <button class="surp-sev active" data-s="medium" onclick="setSurpSev(this)">🟡 Medium</button>
+            <button class="surp-sev" data-s="high"   onclick="setSurpSev(this)">🔴 High</button>
+          </div>
+        </div>
+
         <button class="btn-trigger" onclick="triggerSurprise()">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
           TRIGGER ADAPTATION
         </button>
       </div>
@@ -1182,14 +1290,45 @@ textarea.form-input{resize:none;height:130px;line-height:1.5}
       <button onclick="showNavTab(this,'risk')">Risk Audit</button>
     </nav>
     <div class="topbar-right">
-      <button class="btn-deploy" onclick="showView('landing')">← Back</button>
+      <button class="btn-deploy" onclick="showView('decision')">View Decision →</button>
     </div>
   </header>
-  <div class="analytics-placeholder">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-    <div style="font-size:22px;font-weight:700;color:var(--text2)">Swarm Analytics</div>
-    <div>Run a boardroom session first to see agent performance metrics.</div>
-    <button class="btn-convene" style="margin-top:8px;padding:10px 24px;font-size:13px" onclick="showView('landing')">Initialize Swarm</button>
+  <div style="flex:1;overflow-y:auto;padding:28px 36px">
+    <div style="max-width:1060px;margin:0 auto">
+      <h1 style="font-size:24px;font-weight:800;color:var(--text);letter-spacing:-.02em;margin-bottom:4px">Swarm Analytics</h1>
+      <p style="font-size:13px;color:var(--text3);margin-bottom:22px">Agent performance and contribution breakdown — FreshMart Global session</p>
+      <!-- Summary row -->
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:22px">
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:16px"><div style="font-size:10px;font-weight:700;letter-spacing:.08em;color:var(--text3);margin-bottom:8px">TOTAL AGENTS</div><div style="font-size:28px;font-weight:800;color:var(--text);font-family:var(--mono)">6</div><div style="font-size:11px;color:var(--green);margin-top:4px">All online ●</div></div>
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:16px"><div style="font-size:10px;font-weight:700;letter-spacing:.08em;color:var(--text3);margin-bottom:8px">DEBATE CYCLES</div><div style="font-size:28px;font-weight:800;color:var(--text);font-family:var(--mono)">3</div><div style="font-size:11px;color:var(--text3);margin-top:4px">Max allowed: 3</div></div>
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:16px"><div style="font-size:10px;font-weight:700;letter-spacing:.08em;color:var(--text3);margin-bottom:8px">CHALLENGES RAISED</div><div style="font-size:28px;font-weight:800;color:var(--red);font-family:var(--mono)">2</div><div style="font-size:11px;color:var(--text3);margin-top:4px">1 accepted · 1 partial</div></div>
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:16px"><div style="font-size:10px;font-weight:700;letter-spacing:.08em;color:var(--text3);margin-bottom:8px">STRATEGIES COMPARED</div><div style="font-size:28px;font-weight:800;color:var(--purple3);font-family:var(--mono)">3</div><div style="font-size:11px;color:var(--text3);margin-top:4px">A · B · C evaluated</div></div>
+      </div>
+      <!-- Agent cards -->
+      <div style="font-size:10px;font-weight:700;letter-spacing:.1em;color:var(--text3);text-transform:uppercase;margin-bottom:10px">AGENT CONTRIBUTION BREAKDOWN</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:22px">
+        <div style="background:var(--bg2);border:1px solid var(--border);border-left:3px solid #06b6d4;border-radius:10px;padding:14px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span style="font-size:18px">🔭</span><div><div style="font-size:12px;font-weight:700;color:#06b6d4">Business Research</div><div style="font-size:10px;color:var(--text3)">Market Intelligence</div></div></div><div style="font-size:11px;color:var(--text3);display:flex;flex-direction:column;gap:4px"><div style="display:flex;justify-content:space-between"><span>Contributions</span><span style="color:var(--text);font-weight:600;font-family:var(--mono)">4 msgs</span></div><div style="display:flex;justify-content:space-between"><span>Key finding</span><span style="color:var(--text);font-weight:600">Poland 18-mo window</span></div><div style="display:flex;justify-content:space-between"><span>Impact</span><span style="color:var(--green);font-weight:700">High</span></div></div><div style="height:3px;background:var(--bg3);border-radius:2px;margin-top:8px"><div style="height:3px;background:#06b6d4;border-radius:2px;width:82%"></div></div></div>
+        <div style="background:var(--bg2);border:1px solid var(--border);border-left:3px solid #10b981;border-radius:10px;padding:14px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span style="font-size:18px">💰</span><div><div style="font-size:12px;font-weight:700;color:#10b981">Finance</div><div style="font-size:10px;color:var(--text3)">Financial Modelling</div></div></div><div style="font-size:11px;color:var(--text3);display:flex;flex-direction:column;gap:4px"><div style="display:flex;justify-content:space-between"><span>Contributions</span><span style="color:var(--text);font-weight:600;font-family:var(--mono)">4 msgs</span></div><div style="display:flex;justify-content:space-between"><span>Key output</span><span style="color:var(--text);font-weight:600">IRR 26.4% revised</span></div><div style="display:flex;justify-content:space-between"><span>Challenge status</span><span style="color:var(--amber);font-weight:700">Partially conceded</span></div></div><div style="height:3px;background:var(--bg3);border-radius:2px;margin-top:8px"><div style="height:3px;background:#10b981;border-radius:2px;width:75%"></div></div></div>
+        <div style="background:var(--bg2);border:1px solid var(--border);border-left:3px solid #f59e0b;border-radius:10px;padding:14px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span style="font-size:18px">📣</span><div><div style="font-size:12px;font-weight:700;color:#f59e0b">Marketing & Sales</div><div style="font-size:10px;color:var(--text3)">Go-to-Market</div></div></div><div style="font-size:11px;color:var(--text3);display:flex;flex-direction:column;gap:4px"><div style="display:flex;justify-content:space-between"><span>Contributions</span><span style="color:var(--text);font-weight:600;font-family:var(--mono)">3 msgs</span></div><div style="display:flex;justify-content:space-between"><span>Key output</span><span style="color:var(--text);font-weight:600">Strategy C endorsed</span></div><div style="display:flex;justify-content:space-between"><span>Impact</span><span style="color:var(--green);font-weight:700">High</span></div></div><div style="height:3px;background:var(--bg3);border-radius:2px;margin-top:8px"><div style="height:3px;background:#f59e0b;border-radius:2px;width:68%"></div></div></div>
+        <div style="background:var(--bg2);border:1px solid var(--border);border-left:3px solid #3b82f6;border-radius:10px;padding:14px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span style="font-size:18px">⚙️</span><div><div style="font-size:12px;font-weight:700;color:#3b82f6">Operations / Risk</div><div style="font-size:10px;color:var(--text3)">Ops & Execution</div></div></div><div style="font-size:11px;color:var(--text3);display:flex;flex-direction:column;gap:4px"><div style="display:flex;justify-content:space-between"><span>Contributions</span><span style="color:var(--text);font-weight:600;font-family:var(--mono)">3 msgs</span></div><div style="display:flex;justify-content:space-between"><span>Key output</span><span style="color:var(--text);font-weight:600">Poland 8-mo feasible</span></div><div style="display:flex;justify-content:space-between"><span>Impact</span><span style="color:var(--amber);font-weight:700">Medium</span></div></div><div style="height:3px;background:var(--bg3);border-radius:2px;margin-top:8px"><div style="height:3px;background:#3b82f6;border-radius:2px;width:60%"></div></div></div>
+        <div style="background:var(--bg2);border:1px solid var(--border);border-left:3px solid #ef4444;border-radius:10px;padding:14px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span style="font-size:18px">🗡️</span><div><div style="font-size:12px;font-weight:700;color:#ef4444">Devil's Advocate</div><div style="font-size:10px;color:var(--text3)">Critical Reviewer</div></div></div><div style="font-size:11px;color:var(--text3);display:flex;flex-direction:column;gap:4px"><div style="display:flex;justify-content:space-between"><span>Contributions</span><span style="color:var(--text);font-weight:600;font-family:var(--mono)">3 msgs</span></div><div style="display:flex;justify-content:space-between"><span>Challenges issued</span><span style="color:var(--red);font-weight:700">2 (both actioned)</span></div><div style="display:flex;justify-content:space-between"><span>Impact</span><span style="color:var(--green);font-weight:700">Critical</span></div></div><div style="height:3px;background:var(--bg3);border-radius:2px;margin-top:8px"><div style="height:3px;background:#ef4444;border-radius:2px;width:90%"></div></div></div>
+        <div style="background:var(--bg2);border:1px solid var(--border);border-left:3px solid #8b5cf6;border-radius:10px;padding:14px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span style="font-size:18px">🏛️</span><div><div style="font-size:12px;font-weight:700;color:#8b5cf6">CEO</div><div style="font-size:10px;color:var(--text3)">Final Synthesiser</div></div></div><div style="font-size:11px;color:var(--text3);display:flex;flex-direction:column;gap:4px"><div style="display:flex;justify-content:space-between"><span>Contributions</span><span style="color:var(--text);font-weight:600;font-family:var(--mono)">2 msgs</span></div><div style="display:flex;justify-content:space-between"><span>Decision</span><span style="color:var(--text);font-weight:600">Strategy C — Phased</span></div><div style="display:flex;justify-content:space-between"><span>Consensus</span><span style="color:var(--green);font-weight:700">4/5 agents aligned</span></div></div><div style="height:3px;background:var(--bg3);border-radius:2px;margin-top:8px"><div style="height:3px;background:#8b5cf6;border-radius:2px;width:100%"></div></div></div>
+      </div>
+      <!-- Stage timeline -->
+      <div style="font-size:10px;font-weight:700;letter-spacing:.1em;color:var(--text3);text-transform:uppercase;margin-bottom:10px">BOARDROOM STAGE TIMELINE</div>
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;overflow:hidden">
+        <table style="width:100%;border-collapse:collapse;font-size:12px">
+          <thead><tr style="background:var(--bg3);border-bottom:1px solid var(--border)"><th style="padding:9px 14px;text-align:left;font-size:10px;font-weight:700;letter-spacing:.06em;color:var(--text3)">STAGE</th><th style="padding:9px 14px;text-align:left;font-size:10px;font-weight:700;letter-spacing:.06em;color:var(--text3)">AGENTS ACTIVE</th><th style="padding:9px 14px;text-align:left;font-size:10px;font-weight:700;letter-spacing:.06em;color:var(--text3)">KEY EVENT</th><th style="padding:9px 14px;text-align:right;font-size:10px;font-weight:700;letter-spacing:.06em;color:var(--text3)">STATUS</th></tr></thead>
+          <tbody>
+            <tr style="border-bottom:1px solid var(--border)"><td style="padding:9px 14px;color:var(--text)">① Analyse</td><td style="padding:9px 14px;color:var(--text3)">All 5 dept agents</td><td style="padding:9px 14px;color:var(--text3)">Independent assessments completed</td><td style="padding:9px 14px;text-align:right"><span style="background:rgba(16,185,129,.15);color:#10b981;font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px">COMPLETE</span></td></tr>
+            <tr style="border-bottom:1px solid var(--border)"><td style="padding:9px 14px;color:var(--text)">② Share</td><td style="padding:9px 14px;color:var(--text3)">Research · Finance · Marketing</td><td style="padding:9px 14px;color:var(--text3)">Cross-agent data exchange</td><td style="padding:9px 14px;text-align:right"><span style="background:rgba(16,185,129,.15);color:#10b981;font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px">COMPLETE</span></td></tr>
+            <tr style="border-bottom:1px solid var(--border)"><td style="padding:9px 14px;color:var(--text)">③ Challenge</td><td style="padding:9px 14px;color:var(--text3)">Devil's Advocate · Finance</td><td style="padding:9px 14px;color:var(--red)">2 challenges raised · 1 accepted</td><td style="padding:9px 14px;text-align:right"><span style="background:rgba(16,185,129,.15);color:#10b981;font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px">COMPLETE</span></td></tr>
+            <tr style="border-bottom:1px solid var(--border)"><td style="padding:9px 14px;color:var(--text)">④ Compare</td><td style="padding:9px 14px;color:var(--text3)">Ops/Risk · Marketing</td><td style="padding:9px 14px;color:var(--text3)">Strategies A, B, C evaluated</td><td style="padding:9px 14px;text-align:right"><span style="background:rgba(16,185,129,.15);color:#10b981;font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px">COMPLETE</span></td></tr>
+            <tr><td style="padding:9px 14px;color:var(--text)">⑤ Decide</td><td style="padding:9px 14px;color:var(--text3)">CEO</td><td style="padding:9px 14px;color:var(--purple3)">Strategy C selected · KPIs set</td><td style="padding:9px 14px;text-align:right"><span style="background:rgba(124,58,237,.2);color:var(--purple3);font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px">DECIDED</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -1206,14 +1345,39 @@ textarea.form-input{resize:none;height:130px;line-height:1.5}
       <button class="active">Risk Audit</button>
     </nav>
     <div class="topbar-right">
-      <button class="btn-deploy" onclick="showView('landing')">← Back</button>
+      <button class="btn-deploy" onclick="showView('decision')">View Decision →</button>
     </div>
   </header>
-  <div class="risk-placeholder">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-    <div style="font-size:22px;font-weight:700;color:var(--text2)">Risk Audit</div>
-    <div>Complete a boardroom session to generate the risk audit report.</div>
-    <button class="btn-convene" style="margin-top:8px;padding:10px 24px;font-size:13px" onclick="showView('landing')">Initialize Swarm</button>
+  <div style="flex:1;overflow-y:auto;padding:28px 36px">
+    <div style="max-width:1060px;margin:0 auto">
+      <h1 style="font-size:24px;font-weight:800;color:var(--text);letter-spacing:-.02em;margin-bottom:4px">Risk Audit Report</h1>
+      <p style="font-size:13px;color:var(--text3);margin-bottom:22px">Risk identification and mitigation — generated by Operations/Risk &amp; Devil's Advocate agents</p>
+      <!-- Summary row -->
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:22px">
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:16px"><div style="font-size:10px;font-weight:700;letter-spacing:.08em;color:var(--text3);margin-bottom:8px">TOTAL RISKS</div><div style="font-size:28px;font-weight:800;color:var(--text);font-family:var(--mono)">9</div><div style="font-size:11px;color:var(--text3);margin-top:4px">Identified by swarm</div></div>
+        <div style="background:var(--bg2);border:1px solid rgba(239,68,68,.4);border-radius:10px;padding:16px"><div style="font-size:10px;font-weight:700;letter-spacing:.08em;color:var(--text3);margin-bottom:8px">HIGH RISK</div><div style="font-size:28px;font-weight:800;color:var(--red);font-family:var(--mono)">3</div><div style="font-size:11px;color:var(--text3);margin-top:4px">Require mitigation</div></div>
+        <div style="background:var(--bg2);border:1px solid rgba(245,158,11,.4);border-radius:10px;padding:16px"><div style="font-size:10px;font-weight:700;letter-spacing:.08em;color:var(--text3);margin-bottom:8px">MEDIUM RISK</div><div style="font-size:28px;font-weight:800;color:var(--amber);font-family:var(--mono)">4</div><div style="font-size:11px;color:var(--text3);margin-top:4px">Monitor closely</div></div>
+        <div style="background:var(--bg2);border:1px solid rgba(16,185,129,.4);border-radius:10px;padding:16px"><div style="font-size:10px;font-weight:700;letter-spacing:.08em;color:var(--text3);margin-bottom:8px">LOW RISK</div><div style="font-size:28px;font-weight:800;color:var(--green);font-family:var(--mono)">2</div><div style="font-size:11px;color:var(--text3);margin-top:4px">Accepted</div></div>
+      </div>
+      <!-- Risk table -->
+      <div style="font-size:10px;font-weight:700;letter-spacing:.1em;color:var(--text3);text-transform:uppercase;margin-bottom:10px">RISK REGISTER</div>
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:22px">
+        <table style="width:100%;border-collapse:collapse;font-size:12px">
+          <thead><tr style="background:var(--bg3);border-bottom:1px solid var(--border)"><th style="padding:9px 14px;text-align:left;font-size:10px;font-weight:700;letter-spacing:.06em;color:var(--text3)">#</th><th style="padding:9px 14px;text-align:left;font-size:10px;font-weight:700;letter-spacing:.06em;color:var(--text3)">RISK</th><th style="padding:9px 14px;text-align:left;font-size:10px;font-weight:700;letter-spacing:.06em;color:var(--text3)">CATEGORY</th><th style="padding:9px 14px;text-align:left;font-size:10px;font-weight:700;letter-spacing:.06em;color:var(--text3)">RAISED BY</th><th style="padding:9px 14px;text-align:center;font-size:10px;font-weight:700;letter-spacing:.06em;color:var(--text3)">LIKELIHOOD</th><th style="padding:9px 14px;text-align:center;font-size:10px;font-weight:700;letter-spacing:.06em;color:var(--text3)">RATING</th><th style="padding:9px 14px;text-align:left;font-size:10px;font-weight:700;letter-spacing:.06em;color:var(--text3)">MITIGATION</th></tr></thead>
+          <tbody>
+            <tr style="border-bottom:1px solid var(--border)"><td style="padding:9px 14px;color:var(--text3);font-family:var(--mono)">R-01</td><td style="padding:9px 14px;color:var(--text);font-weight:600">Dual-market cash shortfall</td><td style="padding:9px 14px"><span style="background:rgba(59,130,246,.15);color:#3b82f6;font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px">Financial</span></td><td style="padding:9px 14px;color:#ef4444;font-size:11px">Devil's Advocate</td><td style="padding:9px 14px;text-align:center;color:var(--text)">34%</td><td style="padding:9px 14px;text-align:center"><span style="background:rgba(239,68,68,.2);color:#ef4444;font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px">HIGH</span></td><td style="padding:9px 14px;color:var(--text3);font-size:11px">Phased entry — Poland first</td></tr>
+            <tr style="border-bottom:1px solid var(--border)"><td style="padding:9px 14px;color:var(--text3);font-family:var(--mono)">R-02</td><td style="padding:9px 14px;color:var(--text);font-weight:600">Germany licensing delay (14 mo)</td><td style="padding:9px 14px"><span style="background:rgba(245,158,11,.15);color:#f59e0b;font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px">Regulatory</span></td><td style="padding:9px 14px;color:#ef4444;font-size:11px">Devil's Advocate</td><td style="padding:9px 14px;text-align:center;color:var(--text)">61%</td><td style="padding:9px 14px;text-align:center"><span style="background:rgba(239,68,68,.2);color:#ef4444;font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px">HIGH</span></td><td style="padding:9px 14px;color:var(--text3);font-size:11px">Defer Germany to Year 2; pre-file license Year 1</td></tr>
+            <tr style="border-bottom:1px solid var(--border)"><td style="padding:9px 14px;color:var(--text3);font-family:var(--mono)">R-03</td><td style="padding:9px 14px;color:var(--text);font-weight:600">Lidl closes Poland window early</td><td style="padding:9px 14px"><span style="background:rgba(6,182,212,.15);color:#06b6d4;font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px">Competitive</span></td><td style="padding:9px 14px;color:#06b6d4;font-size:11px">Business Research</td><td style="padding:9px 14px;text-align:center;color:var(--text)">45%</td><td style="padding:9px 14px;text-align:center"><span style="background:rgba(239,68,68,.2);color:#ef4444;font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px">HIGH</span></td><td style="padding:9px 14px;color:var(--text3);font-size:11px">Accelerate Poland timeline; lock sites Q1</td></tr>
+            <tr style="border-bottom:1px solid var(--border)"><td style="padding:9px 14px;color:var(--text3);font-family:var(--mono)">R-04</td><td style="padding:9px 14px;color:var(--text);font-weight:600">FX variance on PLN repatriation</td><td style="padding:9px 14px"><span style="background:rgba(59,130,246,.15);color:#3b82f6;font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px">Financial</span></td><td style="padding:9px 14px;color:#ef4444;font-size:11px">Devil's Advocate</td><td style="padding:9px 14px;text-align:center;color:var(--text)">70%</td><td style="padding:9px 14px;text-align:center"><span style="background:rgba(245,158,11,.2);color:#f59e0b;font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px">MED</span></td><td style="padding:9px 14px;color:var(--text3);font-size:11px">FX hedging — forward contracts</td></tr>
+            <tr style="border-bottom:1px solid var(--border)"><td style="padding:9px 14px;color:var(--text3);font-family:var(--mono)">R-05</td><td style="padding:9px 14px;color:var(--text);font-weight:600">Cold-chain capex overrun</td><td style="padding:9px 14px"><span style="background:rgba(59,130,246,.15);color:#3b82f6;font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px">Operational</span></td><td style="padding:9px 14px;color:#3b82f6;font-size:11px">Operations / Risk</td><td style="padding:9px 14px;text-align:center;color:var(--text)">40%</td><td style="padding:9px 14px;text-align:center"><span style="background:rgba(245,158,11,.2);color:#f59e0b;font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px">MED</span></td><td style="padding:9px 14px;color:var(--text3);font-size:11px">10% contingency on £3.2M estimate</td></tr>
+            <tr style="border-bottom:1px solid var(--border)"><td style="padding:9px 14px;color:var(--text3);font-family:var(--mono)">R-06</td><td style="padding:9px 14px;color:var(--text);font-weight:600">Loyalty app low adoption</td><td style="padding:9px 14px"><span style="background:rgba(245,158,11,.15);color:#f59e0b;font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px">Market</span></td><td style="padding:9px 14px;color:#f59e0b;font-size:11px">Marketing & Sales</td><td style="padding:9px 14px;text-align:center;color:var(--text)">25%</td><td style="padding:9px 14px;text-align:center"><span style="background:rgba(245,158,11,.2);color:#f59e0b;font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px">MED</span></td><td style="padding:9px 14px;color:var(--text3);font-size:11px">Pre-launch digital campaign</td></tr>
+            <tr style="border-bottom:1px solid var(--border)"><td style="padding:9px 14px;color:var(--text3);font-family:var(--mono)">R-07</td><td style="padding:9px 14px;color:var(--text);font-weight:600">Staffing shortfall in Poland</td><td style="padding:9px 14px"><span style="background:rgba(59,130,246,.15);color:#3b82f6;font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px">Operational</span></td><td style="padding:9px 14px;color:#3b82f6;font-size:11px">Operations / Risk</td><td style="padding:9px 14px;text-align:center;color:var(--text)">30%</td><td style="padding:9px 14px;text-align:center"><span style="background:rgba(245,158,11,.2);color:#f59e0b;font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px">MED</span></td><td style="padding:9px 14px;color:var(--text3);font-size:11px">Partner with local agency; hire Month 1</td></tr>
+            <tr style="border-bottom:1px solid var(--border)"><td style="padding:9px 14px;color:var(--text3);font-family:var(--mono)">R-08</td><td style="padding:9px 14px;color:var(--text);font-weight:600">Brand recognition lag</td><td style="padding:9px 14px"><span style="background:rgba(245,158,11,.15);color:#f59e0b;font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px">Market</span></td><td style="padding:9px 14px;color:#f59e0b;font-size:11px">Marketing & Sales</td><td style="padding:9px 14px;text-align:center;color:var(--text)">55%</td><td style="padding:9px 14px;text-align:center"><span style="background:rgba(16,185,129,.15);color:#10b981;font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px">LOW</span></td><td style="padding:9px 14px;color:var(--text3);font-size:11px">6-month pre-launch awareness campaign</td></tr>
+            <tr><td style="padding:9px 14px;color:var(--text3);font-family:var(--mono)">R-09</td><td style="padding:9px 14px;color:var(--text);font-weight:600">Supply SKU gap (Germany)</td><td style="padding:9px 14px"><span style="background:rgba(59,130,246,.15);color:#3b82f6;font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px">Operational</span></td><td style="padding:9px 14px;color:#3b82f6;font-size:11px">Operations / Risk</td><td style="padding:9px 14px;text-align:center;color:var(--text)">40%</td><td style="padding:9px 14px;text-align:center"><span style="background:rgba(16,185,129,.15);color:#10b981;font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px">LOW</span></td><td style="padding:9px 14px;color:var(--text3);font-size:11px">Germany Year 2 — sufficient lead time</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -1226,30 +1390,40 @@ textarea.form-input{resize:none;height:130px;line-height:1.5}
 ════════════════════════════════════════════ */
 const STATE = {
   currentView: 'landing',
-  problem: { company:'', industry:'', budget:'', statement:'' },
-  voiceEnabled: true,
+  problem: {
+    company:   'FreshMart Global',
+    industry:  'Retail / Grocery',
+    budget:    '£50M',
+    statement: 'FreshMart, a profitable UK grocery chain with 120 stores, is evaluating international expansion into Germany and Poland. We must decide: enter Germany, Poland, both markets, or redeploy £50M domestically against rising competition from Whole Foods entering the UK premium segment.'
+  },
+  voiceEnabled: false,   // OFF by default for fast demo testing
   paused: false,
   stage: 'analyze',
   debateCycle: 0,
-  sessionName: '',
+  sessionName: 'FreshMart Global — Expansion Strategy',
   transcriptLines: [],
   traceEntries: [],
   agents: [],
   speakingAgent: null,
   simulationTimer: null,
   surpriseTriggered: false,
+  speed2x: false,        // 2x speed for TTS
+  currentSpeech: null,   // Current speech for skip functionality
+  currentTimeout: null,  // Timeout reference for skip
+  currentUtterance: null // TTS utterance reference for skip
 };
 
 /* ════════════════════════════════════════════
    AGENT DEFINITIONS
 ════════════════════════════════════════════ */
 const AGENTS_DEF = [
-  { id:'nexus',    name:'Nexus',   codename:'Research Deep-Dive',  dept:'Research & Intelligence',     role:'Data Synthesizer',   icon:'🔬', color:'#06b6d4', abbr:'[RES-AGENT]',  pos:{x:25,  y:28} },
-  { id:'aura',     name:'Aura',    codename:'Finance Alpha',        dept:'Financial Modeling',          role:'Risk Analyst',       icon:'🏛', color:'#10b981', abbr:'[FIN-AGENT]',  pos:{x:72,  y:22} },
-  { id:'echo',     name:'Echo',    codename:'Marketing Synthesizer',dept:'Market Sentiment',            role:'Brand Strategist',   icon:'📡', color:'#f59e0b', abbr:'[MKT-AGENT]',  pos:{x:25,  y:72} },
-  { id:'cog',      name:'Cog',     codename:'Operations Vector',    dept:'Operations',                  role:'Logistics Optimizer',icon:'⚙️', color:'#3b82f6', abbr:'[OPS-AGENT]',  pos:{x:72,  y:75} },
-  { id:'vex',      name:'Vex',     codename:"Devil's Advocate",     dept:"Devil's Advocate",            role:'Stress Tester',      icon:'⚖️', color:'#ef4444', abbr:'[RISK-AGENT]', pos:{x:18,  y:50} },
-  { id:'prime',    name:'Prime',   codename:'CEO Node',             dept:'Chief Executive AI',          role:'Swarm Coordinator',  icon:'🧠', color:'#8b5cf6', abbr:'[CEO-AGENT]',  pos:{x:50,  y:47}, isDirector:true },
+  // Oval boardroom: CEO centre, 5 dept agents evenly spaced around the oval
+  { id:'nexus',    name:'Business Research', codename:'Market Intelligence',   dept:'Research & Intelligence', role:'Market · Customers · Competitors · Risks', icon:'🔭', color:'#06b6d4', abbr:'[BIZ-RESEARCH]', pos:{x:50, y:10} },
+  { id:'aura',     name:'Finance',           codename:'Financial Modelling',   dept:'Finance',                 role:'Costs · Revenue · Profitability · Financial Risk', icon:'💰', color:'#10b981', abbr:'[FINANCE]',      pos:{x:83, y:30} },
+  { id:'echo',     name:'Marketing & Sales', codename:'Go-to-Market',          dept:'Marketing & Sales',       role:'Target Customers · Positioning · Acquisition', icon:'📣', color:'#f59e0b', abbr:'[MKT-SALES]',    pos:{x:78, y:72} },
+  { id:'cog',      name:'Operations / Risk', codename:'Ops & Execution',       dept:'Operations / Risk',       role:'Feasibility · Execution · Operational Risks', icon:'⚙️', color:'#3b82f6', abbr:'[OPS-RISK]',     pos:{x:22, y:72} },
+  { id:'vex',      name:"Devil's Advocate",  codename:'Critical Reviewer',     dept:"Devil's Advocate",        role:"Challenges Agents · Identifies Weaknesses", icon:'🗡️', color:'#ef4444', abbr:'[DEVIL-ADV]',    pos:{x:17, y:30} },
+  { id:'prime',    name:'CEO',               codename:'Chief Executive AI',    dept:'CEO — Final Decision',    role:'Synthesises · Resolves · Decides', icon:'🏛️', color:'#8b5cf6', abbr:'[CEO]',          pos:{x:50, y:44}, isDirector:true },
 ];
 
 /* ════════════════════════════════════════════
@@ -1464,78 +1638,14 @@ function renderCanvas() {
 }
 
 /* ════════════════════════════════════════════
-   SIMULATION & LIVE API ENGINE
+   SIMULATION ENGINE
 ════════════════════════════════════════════ */
 const STAGES_ORDER = ['analyze','share','challenge','compare','decide'];
 
-async function startSimulation() {
-  const problemText = STATE.problem.statement || '';
-  if (!problemText) {
-    showToast('No problem statement provided.', 'error');
-    return;
-  }
-
-  showToast('Connecting to LangGraph Multi-Agent Swarm...', 'info');
-  updateStageUI('analyze');
-
-  try {
-    const res = await fetch('/api/run', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ business_problem: problemText })
-    });
-
-    if (!res.ok) {
-      const err = await res.json();
-      throw new Error(err.error || 'Server error ' + res.status);
-    }
-
-    const data = await res.json();
-    STATE.apiResult = data;
-
-    const script = [
-      { agent: 'nexus', stage: 'analyze', delay: 800, text: data.research || 'Market research complete.' },
-      { agent: 'aura', stage: 'analyze', delay: 1100, text: data.finance || 'Financial evaluation complete.' },
-      { agent: 'echo', stage: 'analyze', delay: 900, text: data.marketing || 'Marketing strategy complete.' },
-      { agent: 'nexus', stage: 'share', delay: 800, text: 'Findings forwarded to Finance, Marketing, and Operations Agents.' },
-      { agent: 'vex', stage: 'challenge', delay: 1000, text: data.challenge || 'Disagreement identified between Finance and Marketing.' },
-      { agent: 'cog', stage: 'compare', delay: 900, text: data.operations || 'Operational feasibility assessed.' },
-      { agent: 'vex', stage: 'compare', delay: 800, text: data.devils_advocate || 'Core assumptions challenged.' },
-      { agent: 'prime', stage: 'decide', delay: 1300, text: data.ceo_decision || 'CEO executive directive formulated.' }
-    ];
-
-    let lineIndex = 0;
-    function scheduleNext() {
-      if (lineIndex >= script.length || STATE.paused) {
-        if (lineIndex >= script.length) onSimulationComplete(data);
-        return;
-      }
-      const entry = script[lineIndex++];
-      const delay = entry.delay + (STATE.paused ? 99999 : 0);
-      STATE.simulationTimer = setTimeout(() => {
-        if (STATE.paused) { lineIndex--; return; }
-        if (entry.stage && entry.stage !== STATE.stage) {
-          STATE.stage = entry.stage;
-          updateStageUI(entry.stage);
-        }
-        speak(entry.agent, entry.text, () => {
-          addTranscriptLine(entry.agent, entry.text, entry.stage);
-          addTraceEntry(entry.agent, entry.text);
-          scheduleNext();
-        });
-      }, delay);
-    }
-    scheduleNext();
-
-  } catch (err) {
-    showToast('API error: ' + err.message + '. Running fallback demo.', 'error');
-    runFallbackDemo();
-  }
-}
-
-function runFallbackDemo() {
+function startSimulation() {
   let lineIndex = 0;
-  const script = DEMO_SCRIPT;
+  const script  = DEMO_SCRIPT;
+
   function scheduleNext() {
     if (lineIndex >= script.length || STATE.paused) {
       if (lineIndex >= script.length) onSimulationComplete();
@@ -1545,6 +1655,7 @@ function runFallbackDemo() {
     const delay = entry.delay + (STATE.paused ? 99999 : 0);
     STATE.simulationTimer = setTimeout(() => {
       if (STATE.paused) { lineIndex--; return; }
+      // update stage
       if (entry.stage && entry.stage !== STATE.stage) {
         STATE.stage = entry.stage;
         updateStageUI(entry.stage);
@@ -1559,11 +1670,11 @@ function runFallbackDemo() {
   scheduleNext();
 }
 
-function onSimulationComplete(data) {
+function onSimulationComplete() {
   document.getElementById('decide-nav-btn').style.display = '';
   updateStageUI('decide');
   showToast('Boardroom session complete — decision ready', 'success');
-  buildDecisionView(data);
+  buildDecisionView();
   setTimeout(() => showView('decision'), 1800);
 }
 
@@ -1574,6 +1685,7 @@ function updateStageUI(stage) {
   const badge = document.getElementById('round-badge');
   if (badge && labels[stage]) badge.textContent = labels[stage];
 
+  // Stage trail
   stages.forEach(s => {
     const el = document.getElementById('st-' + s);
     if (!el) return;
@@ -1585,6 +1697,7 @@ function updateStageUI(stage) {
     else { el.textContent = s.toUpperCase(); }
   });
 
+  // Sidebar nav
   stages.forEach(s => {
     const btn = document.getElementById('sb-' + s);
     if (!btn) return;
@@ -1594,28 +1707,39 @@ function updateStageUI(stage) {
   });
 }
 
-function setSidebarStage(stage) {
-  updateStageUI(stage);
-}
-
 let currentAudio = null;
 
+/* ════════════════════════════════════════════
+   SPEAKING & TRANSCRIPT
+════════════════════════════════════════════ */
 function speak(agentId, text, callback) {
   const agent = STATE.agents.find(a => a.id === agentId);
   if (!agent) { if(callback) callback(); return; }
 
+  // Store current speech reference for skip functionality
+  STATE.currentSpeech = { agentId, callback };
+
+  // Highlight node as speaking
   setNodeSpeaking(agentId, true);
 
+  // Activate connection line
   const lineEl = document.getElementById('line-' + agentId + '-ceo');
   if (lineEl) { lineEl.classList.add('active'); }
 
+  const cleanup = () => {
+    setNodeSpeaking(agentId, false);
+    if (lineEl) lineEl.classList.remove('active');
+    STATE.currentSpeech = null;
+    if (currentAudio) {
+      try { currentAudio.pause(); currentAudio.currentTime = 0; } catch(e) {}
+      currentAudio = null;
+    }
+    if (callback) callback();
+  };
+
   if (!STATE.voiceEnabled) {
-    const duration = Math.min(Math.max(text.length * 28, 800), 3200);
-    setTimeout(() => {
-      setNodeSpeaking(agentId, false);
-      if (lineEl) lineEl.classList.remove('active');
-      if (callback) callback();
-    }, duration);
+    const duration = Math.min(Math.max(text.length * 28, 800), 3200) / (STATE.speed2x ? 2.0 : 1.0);
+    STATE.currentTimeout = setTimeout(cleanup, duration);
     return;
   }
 
@@ -1637,29 +1761,21 @@ function speak(agentId, text, callback) {
   .then(blob => {
     const audioUrl = URL.createObjectURL(blob);
     currentAudio = new Audio(audioUrl);
-    currentAudio.onended = () => {
-      setNodeSpeaking(agentId, false);
-      if (lineEl) lineEl.classList.remove('active');
-      currentAudio = null;
-      if (callback) callback();
-    };
-    currentAudio.onerror = () => {
-      fallbackToBrowserTTS(agentId, text, lineEl, callback);
-    };
-    currentAudio.play().catch(() => {
-      fallbackToBrowserTTS(agentId, text, lineEl, callback);
-    });
+    if (STATE.speed2x) currentAudio.playbackRate = 1.5;
+    currentAudio.onended = cleanup;
+    currentAudio.onerror = () => fallbackToBrowserTTS(agentId, text, cleanup);
+    currentAudio.play().catch(() => fallbackToBrowserTTS(agentId, text, cleanup));
   })
   .catch(() => {
-    fallbackToBrowserTTS(agentId, text, lineEl, callback);
+    fallbackToBrowserTTS(agentId, text, cleanup);
   });
 }
 
-function fallbackToBrowserTTS(agentId, text, lineEl, callback) {
+function fallbackToBrowserTTS(agentId, text, cleanup) {
   if (STATE.voiceEnabled && 'speechSynthesis' in window) {
     window.speechSynthesis.cancel();
     const utter = new SpeechSynthesisUtterance(text);
-    utter.rate  = agentId === 'prime' ? 0.88 : (agentId === 'vex' ? 1.05 : 0.95);
+    utter.rate  = (STATE.speed2x ? 2.0 : 1.0) * (agentId === 'prime' ? 0.88 : (agentId === 'vex' ? 1.05 : 0.95));
     utter.pitch = agentId === 'prime' ? 0.8  : (agentId === 'aura' ? 0.9 : 1.0);
     const voices = window.speechSynthesis.getVoices();
     if (voices.length > 0) {
@@ -1667,25 +1783,41 @@ function fallbackToBrowserTTS(agentId, text, lineEl, callback) {
       const vi = voiceMap[agentId] || 0;
       utter.voice = voices[vi % voices.length] || voices[0];
     }
-    utter.onend = () => {
-      setNodeSpeaking(agentId, false);
-      if (lineEl) lineEl.classList.remove('active');
-      if (callback) callback();
-    };
-    utter.onerror = () => {
-      setNodeSpeaking(agentId, false);
-      if (lineEl) lineEl.classList.remove('active');
-      if (callback) callback();
-    };
+    utter.onend = cleanup;
+    utter.onerror = cleanup;
     window.speechSynthesis.speak(utter);
+    STATE.currentUtterance = utter;
   } else {
-    const duration = Math.min(Math.max(text.length * 28, 800), 3200);
-    setTimeout(() => {
-      setNodeSpeaking(agentId, false);
-      if (lineEl) lineEl.classList.remove('active');
-      if (callback) callback();
-    }, duration);
+    const duration = Math.min(Math.max(text.length * 28, 800), 3200) / (STATE.speed2x ? 2.0 : 1.0);
+    STATE.currentTimeout = setTimeout(cleanup, duration);
   }
+}
+
+function skipCurrentSpeech() {
+  if (!STATE.currentSpeech) return;
+  
+  if (currentAudio) {
+    try { currentAudio.pause(); currentAudio.currentTime = 0; } catch(e) {}
+    currentAudio = null;
+  }
+
+  if ('speechSynthesis' in window) {
+    window.speechSynthesis.cancel();
+  }
+  
+  if (STATE.currentTimeout) {
+    clearTimeout(STATE.currentTimeout);
+    STATE.currentTimeout = null;
+  }
+
+  const { agentId, callback } = STATE.currentSpeech;
+  setNodeSpeaking(agentId, false);
+  const lineEl = document.getElementById('line-' + agentId + '-ceo');
+  if (lineEl) lineEl.classList.remove('active');
+  STATE.currentSpeech = null;
+  
+  showToast('Speech skipped', 'info');
+  if (callback) callback();
 }
 
 function setNodeSpeaking(agentId, active) {
@@ -1695,6 +1827,7 @@ function setNodeSpeaking(agentId, active) {
     node.classList.add('speaking');
     const label = node.querySelector('.node-label');
     const box   = node.querySelector('.node-box');
+    // add speaking badge
     let badge = box.querySelector('.node-speaking-badge');
     if (!badge) {
       badge = document.createElement('div');
@@ -1722,19 +1855,32 @@ function addTranscriptLine(agentId, text, stage) {
   const isChallenge = stage === 'challenge';
   const isCEO = agentId === 'prime';
 
-  STATE.transcriptLines.push({ time, abbr, color, text, isChallenge, isCEO });
+  STATE.transcriptLines.push({ time, abbr, color, text, isChallenge, isCEO, agentId });
 
   const container = document.getElementById('transcript-scroll');
   if (!container) return;
 
   const line = document.createElement('div');
   line.className = 'transcript-line';
+  line.id = 'tline-' + agentId + '-' + Date.now();
+  
+  // Mark as speaking if this is the current agent
+  if (STATE.speakingAgent === agentId) {
+    line.classList.add('speaking');
+  }
+  
   line.innerHTML = `
     <div class="t-time">${time}</div>
     <div class="t-agent" style="color:${color}">${abbr.replace('[','').replace(']','')}</div>
-    <div class="t-text${isCEO || isChallenge ? ' highlight' : ''}">${escapeHtml(text)}</div>`;
+    <div class="t-text${isCEO || isChallenge ? ' highlight' : ''}">${text}</div>
+    <button class="t-skip" onclick="skipCurrentSpeech()" title="Skip this speech">SKIP</button>`;
   container.appendChild(line);
   container.scrollTop = container.scrollHeight;
+  
+  // Remove speaking class when speech ends
+  setTimeout(() => {
+    line.classList.remove('speaking');
+  }, 100);
 }
 
 function addTraceEntry(agentId, text) {
@@ -1747,6 +1893,9 @@ function addTraceEntry(agentId, text) {
   STATE.traceEntries.push({ time, abbr, color, text: short });
 }
 
+/* ════════════════════════════════════════════
+   CONTROLS
+════════════════════════════════════════════ */
 function toggleVoice() {
   STATE.voiceEnabled = !STATE.voiceEnabled;
   const btn = document.getElementById('btn-voice-toggle');
@@ -1758,6 +1907,16 @@ function toggleVoice() {
   showToast(STATE.voiceEnabled ? 'Voice enabled' : 'Voice muted', 'info');
 }
 
+function toggleSpeed2x() {
+  STATE.speed2x = !STATE.speed2x;
+  const btn = document.getElementById('btn-speed-toggle');
+  if (btn) {
+    btn.textContent = STATE.speed2x ? '2×' : '1×';
+    btn.classList.toggle('active', STATE.speed2x);
+  }
+  showToast(STATE.speed2x ? 'Speed: 2x' : 'Speed: 1x', 'info');
+}
+
 function togglePause() {
   STATE.paused = !STATE.paused;
   const btn = document.getElementById('btn-pause-play');
@@ -1766,134 +1925,325 @@ function togglePause() {
   showToast(STATE.paused ? 'Session paused' : 'Session resumed', 'info');
 }
 
-function buildDecisionView(data) {
-  const result = data || STATE.apiResult;
+/* ════════════════════════════════════════════
+   DECISION VIEW BUILD
+════════════════════════════════════════════ */
+function buildDecisionView() {
+  // Populate trace
   const traceEl = document.getElementById('trace-lines');
   if (traceEl) {
     traceEl.innerHTML = '';
-    const traceItems = (result && result.trace && result.trace.length) ? result.trace : STATE.traceEntries.map(e => `${e.time} ${e.abbr} ${e.text}`);
-    traceItems.forEach(e => {
+    STATE.traceEntries.forEach(e => {
       const row = document.createElement('div');
       row.className = 'trace-entry';
-      if (typeof e === 'string') {
-        row.innerHTML = `<div class="te-text">${escapeHtml(e)}</div>`;
-      } else {
-        row.innerHTML = `<div class="te-time">${e.time}</div><div class="te-agent" style="color:${e.color}">${e.abbr}</div><div class="te-text">${escapeHtml(e.text)}</div>`;
-      }
+      row.innerHTML = `<div class="te-time">${e.time}</div><div class="te-agent" style="color:${e.color}">${e.abbr}</div><div class="te-text">${e.text}</div>`;
       traceEl.appendChild(row);
     });
   }
+  // Update counts
   document.getElementById('dec-agent-count').textContent = AGENTS_DEF.length;
-
-  if (result) {
-    if (result.ceo_decision) {
-      document.getElementById('ceo-decision-text').textContent = result.ceo_decision;
-    }
-    if (result.research) {
-      document.getElementById('dec-research-evidence').textContent = result.research;
-    }
-    if (result.finance) {
-      document.getElementById('dec-finance-evidence').textContent = result.finance;
-    }
-    if (result.kpis && result.kpis.length >= 3) {
-      document.getElementById('kpi-revenue').textContent = result.kpis[0];
-      document.getElementById('kpi-cac').textContent = result.kpis[1];
-      document.getElementById('kpi-conversion').textContent = result.kpis[2];
-    }
+  // Customize KPIs based on problem
+  if (STATE.problem.company.toLowerCase().includes('fresh') || STATE.problem.industry.toLowerCase().includes('retail')) {
+    document.getElementById('kpi-revenue').textContent     = '£38.4M';
+    document.getElementById('kpi-revenue-change').textContent = '+18% vs Baseline';
+    document.getElementById('kpi-cac').textContent         = '£42';
+    document.getElementById('kpi-conversion').textContent  = '6.8%';
+    document.getElementById('kpi-conv-label').textContent  = 'Loyalty app uptake';
+    document.getElementById('ceo-decision-text').textContent = 'Phase 1: Poland market entry (Q1) → Germany (Year 2)';
+    document.getElementById('dec-research-evidence').textContent = 'Poland grocery market CAGR of 4.1% with an 18-month competitive window before Lidl expansion closes the premium gap. Consumer NPS for premium-fresh concept averages 71 in target demographics.';
+    document.getElementById('dec-finance-evidence').textContent  = 'Poland capex of £15M achieves breakeven at Month 14. Phased approach preserves £22M Germany reserve and £13M strategic buffer. Risk-adjusted IRR of 26.4% — within acceptable parameters.';
   }
 }
 
-async function triggerSurprise() {
-  const text = document.getElementById('surprise-input').value.trim();
-  if (!text) { showToast('Please describe the surprise event first.', 'error'); return; }
+/* ════════════════════════════════════════════
+   SURPRISE FORM HELPERS
+════════════════════════════════════════════ */
+let _surpType = 'budget';
+let _surpSev  = 'medium';
+
+function setSurpType(btn, t) {
+  _surpType = t;
+  document.querySelectorAll('.surp-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  ['budget','competitor','supply','demand','regulatory','custom'].forEach(k => {
+    const el = document.getElementById('sf-' + k);
+    if (el) el.style.display = k === t ? '' : 'none';
+  });
+}
+
+function setSurpSev(btn) {
+  _surpSev = btn.dataset.s;
+  document.querySelectorAll('.surp-sev').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function buildSurpText() {
+  const s = {low:'Minor', medium:'Significant', high:'Critical'}[_surpSev];
+  switch (_surpType) {
+    case 'budget':
+      return `${s} budget cut of −${document.getElementById('sb-pct')?.value||20}%: ${document.getElementById('sb-reason')?.value||''}`;
+    case 'competitor':
+      return `${s} competitor threat — ${document.getElementById('sc-name')?.value||'Competitor'} has ${document.getElementById('sc-action')?.value||'entered the market'}`;
+    case 'supply':
+      return `${s} supply chain disruption: ${document.getElementById('ss-type')?.value||''}. Extra cost: £${document.getElementById('ss-cost')?.value||'8'}M`;
+    case 'demand':
+      return `${s} demand shift in ${document.getElementById('sd-mkt')?.value||'market'}: ${document.getElementById('sd-dir')?.value||''}`;
+    case 'regulatory':
+      return `${s} regulatory change in ${document.getElementById('sr-mkt')?.value||'market'}: ${document.getElementById('sr-type')?.value||''}`;
+    case 'custom':
+      return document.getElementById('sc-text')?.value?.trim() || 'Custom surprise event.';
+    default: return 'Surprise event injected.';
+  }
+}
+
+/* ════════════════════════════════════════════
+   SURPRISE ROUND
+════════════════════════════════════════════ */
+function triggerSurprise() {
+  const text = buildSurpText();
+  if (!text) { showToast('Please fill in the surprise details.', 'error'); return; }
   STATE.surpriseTriggered = true;
-  showToast('Surprise injected — querying LangGraph adaptive node...', 'info');
+  showToast('Surprise injected — re-running affected agents...', 'info');
   showView('boardroom');
   updateStageUI('analyze');
   document.getElementById('round-badge').textContent = 'SURPRISE · ADAPTATION';
-  addTranscriptLine('prime', `⚡ SURPRISE EVENT INJECTED: "${text}"`, 'surprise');
-
-  try {
-    const res = await fetch('/api/run', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        business_problem: STATE.problem.statement,
-        surprise: text
-      })
-    });
-    const data = await res.json();
-    STATE.apiResult = data;
-
-    const surpriseScript = [
-      { agent: 'vex', delay: 700, text: `SURPRISE EVENT PROCESSED: ${text}. Recalculating models.` },
-      { agent: 'prime', delay: 1200, text: data.revised_decision || 'Revised directive issued.' }
-    ];
-
-    let idx = 0;
-    function next() {
-      if (idx >= surpriseScript.length) {
-        showToast('Surprise adaptation complete — revised decision ready', 'success');
-        buildSurpriseDecision(text, data);
-        setTimeout(() => showView('decision'), 1800);
-        return;
-      }
-      const entry = surpriseScript[idx++];
+  addTranscriptLine('prime', `⚡ SURPRISE [${_surpType.toUpperCase()}/${_surpSev.toUpperCase()}]: "${text}"`, 'surprise');
+  let idx = 0;
+  function next() {
+    if (idx >= SURPRISE_SCRIPT.length) {
+      showToast('Surprise adaptation complete — revised decision ready', 'success');
+      buildSurpriseDecision(text);
+      setTimeout(() => showView('decision'), 1800);
+      return;
+    }
+    const entry = SURPRISE_SCRIPT[idx++];
+    setTimeout(() => {
       speak(entry.agent, entry.text, () => {
         addTranscriptLine(entry.agent, entry.text, 'surprise');
         addTraceEntry(entry.agent, entry.text);
         next();
       });
-    }
-    next();
-  } catch (err) {
-    showToast('Surprise API Error: ' + err.message, 'error');
+    }, entry.delay);
   }
+  next();
 }
 
-function buildSurpriseDecision(surpriseText, data) {
-  const result = data || STATE.apiResult;
-  if (result && result.revised_decision) {
-    document.getElementById('ceo-decision-text').textContent = result.revised_decision;
-  }
-  if (result && result.kpis && result.kpis.length >= 3) {
-    document.getElementById('kpi-revenue').textContent = result.kpis[0];
-    document.getElementById('kpi-cac').textContent = result.kpis[1];
-    document.getElementById('kpi-conversion').textContent = result.kpis[2];
-  }
+function buildSurpriseDecision(surpriseText) {
+  document.getElementById('ceo-decision-text').textContent = 'REVISED: Accelerated Poland entry (6-month) + Partnership model + Germany deferred to Month 36';
+  document.getElementById('dec-research-evidence').textContent = 'Strategic window compressed to 12 months post-surprise. Early-mover premium still exceeds revised cost burden. Partnership model reduces CAC by 22%.';
+  document.getElementById('dec-finance-evidence').textContent  = 'Surprise increases Year-1 capex by 18% to £17.7M. Breakeven revised to Month 19. Germany reserve reduced. Domestic buffer now £6M — operational minimum.';
+  document.getElementById('kpi-revenue').textContent     = '£31.2M';
+  document.getElementById('kpi-revenue-change').textContent = '+8% vs Revised Baseline';
+  document.getElementById('kpi-cac').textContent         = '£52';
+  document.getElementById('kpi-conversion').textContent  = '7.1%';
+  // Add surprise to trace
   addTraceEntry('prime', `SURPRISE PROCESSED: ${surpriseText.slice(0,60)}… — Decision revised.`);
-  buildDecisionView(result);
-}
-
-function escapeHtml(text) {
-  if (!text) return '';
-  return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+  buildDecisionView();
 }
 
 /* ════════════════════════════════════════════
    REPORT DOWNLOAD
 ════════════════════════════════════════════ */
 function downloadReport() {
-  const lines = ['AGENTIC SWARM – BOARDROOM DECISION REPORT', '='.repeat(50), ''];
-  lines.push('Session: ' + STATE.sessionName);
-  lines.push('Problem: ' + (STATE.problem.statement || 'See brief'));
-  lines.push('');
-  lines.push('── AGENT SWARM TRANSCRIPT ──');
-  STATE.transcriptLines.forEach(l => lines.push(`${l.time}  ${l.abbr.padEnd(14)}${l.text}`));
-  lines.push('');
-  lines.push('── CEO FINAL DECISION ──');
-  lines.push(document.getElementById('ceo-decision-text')?.textContent || '');
-  lines.push('');
-  lines.push('── KPIs ──');
-  lines.push('Revenue Target : ' + (document.getElementById('kpi-revenue')?.textContent || ''));
-  lines.push('Est. CAC       : ' + (document.getElementById('kpi-cac')?.textContent || ''));
-  lines.push('Conversion Rate: ' + (document.getElementById('kpi-conversion')?.textContent || ''));
-  const blob = new Blob([lines.join('\n')], { type:'text/plain' });
-  const a    = document.createElement('a');
-  a.href     = URL.createObjectURL(blob);
-  a.download = 'AgenticSwarm_BoardroomReport.txt';
-  a.click();
-  showToast('Report downloaded', 'success');
+  const { jsPDF } = window.jspdf;
+  const pdf = new jsPDF();
+  
+  let y = 20;
+  const lineHeight = 7;
+  const pageHeight = 280;
+  
+  // Helper to add text with page break handling
+  const addText = (text, fontSize = 10, style = 'normal', color = [0, 0, 0]) => {
+    if (y > pageHeight) {
+      pdf.addPage();
+      y = 20;
+    }
+    pdf.setFontSize(fontSize);
+    pdf.setFont('helvetica', style);
+    pdf.setTextColor(...color);
+    pdf.text(text, 15, y);
+    y += lineHeight * (fontSize / 10);
+  };
+  
+  const addLine = () => {
+    if (y > pageHeight - 10) {
+      pdf.addPage();
+      y = 20;
+    }
+    pdf.setDrawColor(200, 200, 200);
+    pdf.line(15, y, 195, y);
+    y += 5;
+  };
+  
+  // Title
+  pdf.setFillColor(124, 58, 237);
+  pdf.rect(0, 0, 210, 35, 'F');
+  pdf.setTextColor(255, 255, 255);
+  pdf.setFontSize(20);
+  pdf.setFont('helvetica', 'bold');
+  pdf.text('AGENTIC SWARM', 15, 15);
+  pdf.setFontSize(14);
+  pdf.text('Boardroom Decision Report', 15, 25);
+  
+  y = 45;
+  
+  // Session Info
+  pdf.setTextColor(0, 0, 0);
+  pdf.setFontSize(12);
+  pdf.setFont('helvetica', 'bold');
+  pdf.text('SESSION OVERVIEW', 15, y);
+  y += 10;
+  
+  pdf.setFontSize(10);
+  pdf.setFont('helvetica', 'normal');
+  pdf.text('Session: ' + STATE.sessionName, 15, y);
+  y += 7;
+  pdf.text('Company: ' + STATE.problem.company, 15, y);
+  y += 7;
+  pdf.text('Industry: ' + STATE.problem.industry, 15, y);
+  y += 7;
+  pdf.text('Budget: ' + STATE.problem.budget, 15, y);
+  y += 10;
+  
+  addLine();
+  
+  // CEO Decision
+  pdf.setFontSize(12);
+  pdf.setFont('helvetica', 'bold');
+  pdf.setTextColor(124, 58, 237);
+  pdf.text('CEO FINAL DECISION', 15, y);
+  y += 10;
+  
+  const decision = document.getElementById('ceo-decision-text')?.textContent || 'Decision pending';
+  pdf.setFontSize(11);
+  pdf.setFont('helvetica', 'bold');
+  pdf.setTextColor(0, 0, 0);
+  const decisionLines = pdf.splitTextToSize(decision, 180);
+  decisionLines.forEach(line => {
+    if (y > pageHeight) {
+      pdf.addPage();
+      y = 20;
+    }
+    pdf.text(line, 15, y);
+    y += 7;
+  });
+  y += 5;
+  
+  addLine();
+  
+  // KPIs
+  pdf.setFontSize(12);
+  pdf.setFont('helvetica', 'bold');
+  pdf.setTextColor(124, 58, 237);
+  pdf.text('KEY PERFORMANCE INDICATORS', 15, y);
+  y += 10;
+  
+  pdf.setFontSize(10);
+  pdf.setFont('helvetica', 'normal');
+  pdf.setTextColor(0, 0, 0);
+  
+  const kpis = [
+    { label: 'Revenue Target', value: document.getElementById('kpi-revenue')?.textContent || 'N/A' },
+    { label: 'Revenue Change', value: document.getElementById('kpi-revenue-change')?.textContent || 'N/A' },
+    { label: 'Est. CAC', value: document.getElementById('kpi-cac')?.textContent || 'N/A' },
+    { label: 'Conversion Rate', value: document.getElementById('kpi-conversion')?.textContent || 'N/A' }
+  ];
+  
+  kpis.forEach(kpi => {
+    if (y > pageHeight) {
+      pdf.addPage();
+      y = 20;
+    }
+    pdf.setFont('helvetica', 'bold');
+    pdf.text(kpi.label + ':', 15, y);
+    pdf.setFont('helvetica', 'normal');
+    pdf.text(kpi.value, 70, y);
+    y += 7;
+  });
+  y += 5;
+  
+  addLine();
+  
+  // Evidence
+  pdf.setFontSize(12);
+  pdf.setFont('helvetica', 'bold');
+  pdf.setTextColor(124, 58, 237);
+  pdf.text('SUPPORTING EVIDENCE', 15, y);
+  y += 10;
+  
+  const evidence = [
+    { source: 'Business Research', text: document.getElementById('dec-research-evidence')?.textContent || '' },
+    { source: 'Finance', text: document.getElementById('dec-finance-evidence')?.textContent || '' }
+  ];
+  
+  evidence.forEach(ev => {
+    if (ev.text) {
+      pdf.setFontSize(10);
+      pdf.setFont('helvetica', 'bold');
+      pdf.setTextColor(0, 0, 0);
+      pdf.text(ev.source + ':', 15, y);
+      y += 6;
+      
+      pdf.setFont('helvetica', 'normal');
+      pdf.setTextColor(60, 60, 60);
+      const evLines = pdf.splitTextToSize(ev.text, 180);
+      evLines.forEach(line => {
+        if (y > pageHeight) {
+          pdf.addPage();
+          y = 20;
+        }
+        pdf.text(line, 15, y);
+        y += 6;
+      });
+      y += 5;
+    }
+  });
+  
+  addLine();
+  
+  // Transcript
+  pdf.setFontSize(12);
+  pdf.setFont('helvetica', 'bold');
+  pdf.setTextColor(124, 58, 237);
+  pdf.text('AGENT SWARM TRANSCRIPT', 15, y);
+  y += 10;
+  
+  pdf.setFontSize(8);
+  pdf.setFont('helvetica', 'normal');
+  pdf.setTextColor(0, 0, 0);
+  
+  STATE.transcriptLines.forEach(l => {
+    if (y > pageHeight) {
+      pdf.addPage();
+      y = 20;
+    }
+    const timeStr = l.time || '';
+    const agentStr = (l.abbr || '').replace('[', '').replace(']', '').padEnd(14);
+    const fullLine = timeStr + '  ' + agentStr + ' ' + l.text;
+    const lines = pdf.splitTextToSize(fullLine, 180);
+    lines.forEach(line => {
+      if (y > pageHeight) {
+        pdf.addPage();
+        y = 20;
+      }
+      pdf.text(line, 15, y);
+      y += 5;
+    });
+  });
+  
+  // Footer
+  const pageCount = pdf.internal.getNumberOfPages();
+  for (let i = 1; i <= pageCount; i++) {
+    pdf.setPage(i);
+    pdf.setFontSize(8);
+    pdf.setTextColor(150, 150, 150);
+    pdf.text('Agentic Swarm — Boardroom Decision Report', 15, 290);
+    pdf.text('Page ' + i + ' of ' + pageCount, 180, 290);
+  }
+  
+  // Save
+  pdf.save('AgenticSwarm_BoardroomReport.pdf');
+  showToast('PDF report downloaded', 'success');
 }
 
 /* ════════════════════════════════════════════
@@ -1957,13 +2307,127 @@ function showAgentPopup(agent) {
    INIT
 ════════════════════════════════════════════ */
 window.addEventListener('DOMContentLoaded', () => {
+  // Pre-fill form with hardcoded demo values
+  const co   = document.getElementById('inp-company');
+  const ind  = document.getElementById('inp-industry');
+  const bud  = document.getElementById('inp-budget');
+  const prob = document.getElementById('inp-problem');
+  if (co)   co.value   = STATE.problem.company;
+  if (ind)  ind.value  = STATE.problem.industry;
+  if (bud)  bud.value  = STATE.problem.budget;
+  if (prob) { prob.value = STATE.problem.statement; updateCharCount(prob); }
+
   // Load voices async
   if ('speechSynthesis' in window) {
     window.speechSynthesis.getVoices();
     window.speechSynthesis.addEventListener('voiceschanged', () => {});
   }
+
+  injectTestBar();
   showView('landing');
 });
+
+/* ────────────────────────────────────────────
+   TEST TOOLBAR  (floating shortcuts bar)
+──────────────────────────────────────────── */
+function injectTestBar() {
+  const bar = document.createElement('div');
+  bar.id = 'test-bar';
+  bar.style.cssText = [
+    'position:fixed','bottom:14px','left:50%','transform:translateX(-50%)',
+    'background:#13141f','border:1px solid #333560','border-radius:12px',
+    'padding:7px 12px','display:flex','align-items:center','gap:7px',
+    'z-index:99999','box-shadow:0 8px 32px rgba(0,0,0,.65)',
+    "font-family:'Inter',sans-serif"
+  ].join(';');
+
+  const tb = (label, color, fn) => {
+    const b = document.createElement('button');
+    b.textContent = label;
+    b.style.cssText = `background:rgba(255,255,255,.05);border:1px solid ${color}44;color:${color};font-size:11px;font-weight:600;padding:5px 11px;border-radius:7px;cursor:pointer;letter-spacing:.03em`;
+    b.onmouseover = () => b.style.background = `${color}18`;
+    b.onmouseout  = () => b.style.background = 'rgba(255,255,255,.05)';
+    b.onclick = fn;
+    return b;
+  };
+
+  const label = document.createElement('span');
+  label.textContent = 'TEST';
+  label.style.cssText = 'font-size:10px;font-weight:700;letter-spacing:.1em;color:#64748b;margin-right:4px';
+
+  const closeBtn = document.createElement('button');
+  closeBtn.textContent = '✕';
+  closeBtn.style.cssText = 'background:none;border:none;color:#64748b;font-size:14px;cursor:pointer;padding:2px 6px;margin-left:4px';
+  closeBtn.onclick = () => bar.remove();
+
+  bar.appendChild(label);
+  bar.appendChild(tb('① Landing',    '#6366f1', () => showView('landing')));
+  bar.appendChild(tb('② Assembly',   '#06b6d4', quickAssembly));
+  bar.appendChild(tb('③ Boardroom',  '#f59e0b', quickBoardroom));
+  bar.appendChild(tb('④ Decision',   '#8b5cf6', quickDecision));
+  bar.appendChild(tb('⑤ Surprise',   '#ef4444', quickSurprise));
+  bar.appendChild(tb('⑥ Analytics',  '#3b82f6', () => showView('analytics')));
+  bar.appendChild(tb('⑦ Risk Audit', '#10b981', () => showView('risk')));
+  bar.appendChild(closeBtn);
+  document.body.appendChild(bar);
+}
+
+/* quick-nav helpers */
+function quickAssembly() {
+  showView('assembly');
+  runAssembly();
+}
+
+function quickBoardroom() {
+  launchBoardroom();
+}
+
+function quickDecision() {
+  // Pre-populate with hardcoded transcript + trace then jump straight to decision
+  STATE.transcriptLines = HARDCODED_TRANSCRIPT;
+  STATE.traceEntries    = HARDCODED_TRACE;
+  buildDecisionView();
+  showView('decision');
+  document.getElementById('dec-session-name').textContent = STATE.sessionName;
+}
+
+function quickSurprise() {
+  quickDecision();
+  // small delay so the view renders first
+  setTimeout(() => triggerSurprise(), 300);
+}
+
+/* ────────────────────────────────────────────
+   HARDCODED TRANSCRIPT / TRACE  (demo data)
+──────────────────────────────────────────── */
+const HARDCODED_TRANSCRIPT = [
+  { time:'10:02:08', abbr:'BIZ-RESEARCH', color:'#06b6d4', isCEO:false, isChallenge:false, text:'Germany grocery market €240B, 2.3% CAGR. Premium fresh segment 18% gap. Poland: 4.1% CAGR, lower competition, high loyalty-programme receptivity.' },
+  { time:'10:02:41', abbr:'FINANCE',      color:'#10b981', isCEO:false, isChallenge:false, text:'10k Monte Carlo scenarios run. Germany: £28M capex, breakeven Month 18. Poland: £15M capex, breakeven Month 14. Dual-market: cash-flow neutral Month 22.' },
+  { time:'10:03:09', abbr:'MKT-SALES',    color:'#f59e0b', isCEO:false, isChallenge:false, text:'FreshMart loyalty 2M members is transferable. Polish digital adoption 84% — ideal for loyalty app. Recommend Poland-first for lower CAC.' },
+  { time:'10:03:34', abbr:'OPS-RISK',     color:'#3b82f6', isCEO:false, isChallenge:false, text:'UK network covers 60% of German SKU requirements. Polish cold-chain needs £3.2M extra CAPEX. Poland lead time 8 months, Germany 11 months.' },
+  { time:'10:04:02', abbr:'DEVIL-ADV',    color:'#ef4444', isCEO:false, isChallenge:false, text:'Dual-market carries 34% cash-shortfall probability at Month 16. Germany licensing averages 14 months. PLN FX variance 8–12%. Flagging as material risks.' },
+  { time:'10:04:45', abbr:'BIZ-RESEARCH', color:'#06b6d4', isCEO:false, isChallenge:false, text:'Sharing with Finance: Poland CAGR backed by middle-class spending data. Lidl announced 40 new Polish stores 2025 — window is 18 months.' },
+  { time:'10:05:12', abbr:'FINANCE',      color:'#10b981', isCEO:false, isChallenge:false, text:'Adjusting model for Lidl pressure. Revised breakeven Month 17. Domestic IRR 31% vs 22% Poland-only — flagging to CEO.' },
+  { time:'10:05:51', abbr:'DEVIL-ADV',    color:'#ef4444', isCEO:false, isChallenge:true,  text:'CHALLENGING FINANCE: Domestic IRR 31% ignores strategic erosion. Ceding £240B market to Lidl/Aldi permanently forecloses optionality. I formally dispute domestic-first.' },
+  { time:'10:06:28', abbr:'FINANCE',      color:'#10b981', isCEO:false, isChallenge:true,  text:"Challenge noted. Revising to Poland-only with phased Germany Year 2. Updated IRR 26.4%. I partially concede the point." },
+  { time:'10:07:04', abbr:'OPS-RISK',     color:'#3b82f6', isCEO:false, isChallenge:false, text:'Strategy A: Poland-only £15M, Month-14 breakeven. Strategy B: Germany-only £28M, high regulatory risk. Strategy C: Phased Poland→Germany £50M over 24 months.' },
+  { time:'10:07:38', abbr:'MKT-SALES',    color:'#f59e0b', isCEO:false, isChallenge:false, text:'Poland-first maximises loyalty app adoption. Germany-first = higher brand risk vs Lidl/Aldi. Recommend Strategy C for brand integrity.' },
+  { time:'10:08:15', abbr:'CEO',          color:'#8b5cf6', isCEO:true,  isChallenge:false, text:'Synthesising all inputs. Poland window 18 months confirmed. Finance IRR 26.4% phased. Ops confirms Poland feasible 8 months. Challenge accepted. DECISION: Phased — Poland Y1, Germany Y2.' },
+  { time:'10:08:52', abbr:'CEO',          color:'#8b5cf6', isCEO:true,  isChallenge:false, text:'FINAL: Execute Poland Q1. £15M capex. 12 stores by Month 8. Loyalty app at launch. Reserve £22M for Germany Y2. KPIs: 85% occupancy Month 6, CAC <£42, NPS >65.' },
+];
+
+const HARDCODED_TRACE = [
+  { time:'[10:02:08]', abbr:'[BIZ-RESEARCH]', color:'#06b6d4', text:'Market sweep complete. Germany gap 18%. Poland CAGR 4.1%. Window: 18 months.' },
+  { time:'[10:02:41]', abbr:'[FINANCE]',       color:'#10b981', text:'10k Monte Carlo done. Germany IRR 19.2%, Poland 22.8%, Domestic 31%.' },
+  { time:'[10:03:09]', abbr:'[MKT-SALES]',    color:'#f59e0b', text:'Loyalty programme transferable. Poland digital adoption 84%.' },
+  { time:'[10:03:34]', abbr:'[OPS-RISK]',     color:'#3b82f6', text:'60% SKU coverage UK→DE. Cold-chain gap Poland: £3.2M. Poland 8mo lead time.' },
+  { time:'[10:04:02]', abbr:'[DEVIL-ADV]',    color:'#ef4444', text:'34% cash-shortfall probability dual-market Month 16 stress scenario.' },
+  { time:'[10:05:51]', abbr:'[DEVIL-ADV]',    color:'#ef4444', text:'CHALLENGE: Domestic IRR 31% ignores £240B optionality loss.' },
+  { time:'[10:06:28]', abbr:'[FINANCE]',       color:'#10b981', text:'CHALLENGE ACCEPTED (partial). Phased IRR revised to 26.4%.' },
+  { time:'[10:07:04]', abbr:'[OPS-RISK]',     color:'#3b82f6', text:'3 strategies compared. Strategy C feasible within £50M.' },
+  { time:'[10:08:15]', abbr:'[CEO]',           color:'#8b5cf6', text:'SYNTHESIS: Strategy C selected. Poland Q1. Germany Year 2.' },
+  { time:'[10:08:52]', abbr:'[CEO]',           color:'#8b5cf6', text:'FINAL LOCKED. KPIs set. Domestic-only rejected.' },
+];
 </script>
 </body>
 </html>

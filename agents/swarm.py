@@ -124,9 +124,9 @@ def research_agent(state: SwarmState) -> dict:
 
 def finance_agent(state: SwarmState) -> dict:
     system_prompt = (
-        "You are the Finance Agent. You have received findings from the Business Research Agent. "
-        "Based on the business problem and research findings provided, evaluate: estimated costs, "
-        "revenue potential, break-even assumptions, financial risks. "
+        "You are the Finance and Treasury Agent. You have received findings from the Business Research Agent. "
+        "Based on the business problem and research findings provided, evaluate: estimated costs, cost of funds, "
+        "liquidity buffers, revenue potential, break-even assumptions, and financial margins. "
         "Give a clear RECOMMEND or DO NOT RECOMMEND with one key financial reason."
     )
     user_input = (
@@ -162,8 +162,8 @@ def marketing_agent(state: SwarmState) -> dict:
 
 def challenge_node(state: SwarmState) -> dict:
     system_prompt = (
-        "You are a critical reviewer. Finance Agent recommends: [their output]. "
-        "Marketing Agent recommends: [their output]. Find where these two agents conflict. "
+        "You are the Inter-Department Conflict Reviewer. Finance Agent recommends: [their output]. "
+        "Marketing Agent recommends: [their output]. Find where these two departments conflict (e.g. growth vs cost/risk). "
         "State what Finance says, what Marketing says, and why they conflict. "
         "Then propose the resolution the CEO should consider."
     )
@@ -181,9 +181,9 @@ def challenge_node(state: SwarmState) -> dict:
 
 def operations_agent(state: SwarmState) -> dict:
     system_prompt = (
-        "You are the Operations and Risk Agent. You have received outputs from Research, Finance, and Marketing Agents. "
-        "Evaluate: operational feasibility, execution risks, regulatory considerations, resource requirements. "
-        "Give a FEASIBLE or NOT FEASIBLE verdict with the single biggest operational risk."
+        "You are the Operations, Compliance and Risk Agent. You have received outputs from Research, Finance, and Marketing Agents. "
+        "Evaluate: operational capacity, compliance and regulatory considerations, execution bottlenecks, resource requirements. "
+        "Give a FEASIBLE or NOT FEASIBLE verdict with the single biggest operational or compliance risk."
     )
     user_input = (
         f"Business Problem:\n{state['business_problem']}\n\n"
@@ -201,10 +201,10 @@ def operations_agent(state: SwarmState) -> dict:
 
 def devils_advocate(state: SwarmState) -> dict:
     system_prompt = (
-        "You are the Devil's Advocate. You have received outputs from Research, Finance, Marketing, AND Operations Agents. "
-        "After reviewing all department agent outputs, identify the single most dangerous assumption being made. Output exactly: "
-        "ASSUMPTION CHALLENGED: [state it] WHY IT COULD BE WRONG: [scenario where it fails] "
-        "WHAT CEO MUST VERIFY: [one specific check]"
+        "You are the Credit Risk and Devil's Advocate Agent. You have received outputs from Research, Finance, Marketing, AND Operations Agents. "
+        "Your role is to rigorously evaluate credit risk, default exposure, and challenge the single most dangerous assumption being made across all departments. Output exactly: "
+        "ASSUMPTION CHALLENGED: [state it] WHY IT COULD BE WRONG: [credit risk or failure scenario] "
+        "WHAT CEO MUST VERIFY: [one specific check or risk control]"
     )
     user_input = (
         f"Business Problem:\n{state['business_problem']}\n\n"
