@@ -19,21 +19,39 @@ warnings.filterwarnings("ignore", category=UserWarning, module="langchain_google
 
 load_dotenv()
 
-api_key = os.getenv("GOOGLE_API_KEY") or os.getenv("GEMINI_API_KEY")
-if not api_key:
-    raise ValueError("GOOGLE_API_KEY not found in environment or .env file.")
-
 model_name = os.getenv("GEMINI_MODEL", "gemini-3.1-flash-lite")
 
-research_llm = ChatGoogleGenerativeAI(model=model_name, api_key=api_key)
-finance_llm = ChatGoogleGenerativeAI(model=model_name, api_key=api_key)
-marketing_llm = ChatGoogleGenerativeAI(model=model_name, api_key=api_key)
-challenge_llm = ChatGoogleGenerativeAI(model=model_name, api_key=api_key)
-operations_llm = ChatGoogleGenerativeAI(model=model_name, api_key=api_key)
-devils_llm = ChatGoogleGenerativeAI(model=model_name, api_key=api_key)
-ceo_llm = ChatGoogleGenerativeAI(model=model_name, api_key=api_key)
-surprise_llm = ChatGoogleGenerativeAI(model=model_name, api_key=api_key)
 
+def _get_api_keys() -> list[str]:
+    raw_keys = [
+        os.getenv("GOOGLE_API_KEY"),
+        os.getenv("GEMINI_API_KEY"),
+        os.getenv("Bckp1_API"),
+        os.getenv("GEMINI_BACKUP_KEY_1"),
+        os.getenv("Bckp2_API"),
+        os.getenv("GEMINI_BACKUP_KEY_2"),
+    ]
+    keys: list[str] = []
+    seen = set()
+    for k in raw_keys:
+        if k and k.strip() and k.strip() not in seen:
+            seen.add(k.strip())
+            keys.append(k.strip())
+    return keys
+
+
+_CURRENT_KEY_INDEX = 0
+_all_keys = _get_api_keys()
+_primary_key = _all_keys[0] if _all_keys else None
+
+research_llm = ChatGoogleGenerativeAI(model=model_name, api_key=_primary_key)
+finance_llm = ChatGoogleGenerativeAI(model=model_name, api_key=_primary_key)
+marketing_llm = ChatGoogleGenerativeAI(model=model_name, api_key=_primary_key)
+challenge_llm = ChatGoogleGenerativeAI(model=model_name, api_key=_primary_key)
+operations_llm = ChatGoogleGenerativeAI(model=model_name, api_key=_primary_key)
+devils_llm = ChatGoogleGenerativeAI(model=model_name, api_key=_primary_key)
+ceo_llm = ChatGoogleGenerativeAI(model=model_name, api_key=_primary_key)
+surprise_llm = ChatGoogleGenerativeAI(model=model_name, api_key=_primary_key)
 
 
 def take_last(current: str, new: str) -> str:
@@ -65,28 +83,43 @@ def _clean(text: str) -> str:
 
 
 def _call_llm(llm_instance: ChatGoogleGenerativeAI, system_prompt: str, user_content: str, agent_name: str = "Agent") -> str:
-    try:
-        messages = [
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_content},
-        ]
-        response = llm_instance.invoke(messages)
-        content = response.content
-        if isinstance(content, str):
-            raw_text = content.strip()
-        elif isinstance(content, list):
-            parts = []
-            for part in content:
-                if isinstance(part, dict) and "text" in part:
-                    parts.append(part["text"])
-                elif isinstance(part, str):
-                    parts.append(part)
-            raw_text = "".join(parts).strip()
-        else:
-            raw_text = str(content).strip()
-        return _clean(raw_text)
-    except Exception as e:
-        return f"[AGENT ERROR] {agent_name} failed: {str(e)}. Proceeding with available data."
+    global _CURRENT_KEY_INDEX
+    keys = _get_api_keys()
+    if not keys:
+        return f"[AGENT ERROR] {agent_name} failed: No Gemini API keys found in environment."
+
+    messages = [
+        {"role": "system", "content": system_prompt},
+        {"role": "user", "content": user_content},
+    ]
+
+    last_error = ""
+    for attempt in range(len(keys)):
+        idx = (_CURRENT_KEY_INDEX + attempt) % len(keys)
+        active_key = keys[idx]
+        try:
+            active_llm = ChatGoogleGenerativeAI(model=model_name, api_key=active_key)
+            response = active_llm.invoke(messages)
+            _CURRENT_KEY_INDEX = idx
+            content = response.content
+            if isinstance(content, str):
+                raw_text = content.strip()
+            elif isinstance(content, list):
+                parts = []
+                for part in content:
+                    if isinstance(part, dict) and "text" in part:
+                        parts.append(part["text"])
+                    elif isinstance(part, str):
+                        parts.append(part)
+                raw_text = "".join(parts).strip()
+            else:
+                raw_text = str(content).strip()
+            return _clean(raw_text)
+        except Exception as e:
+            last_error = str(e)
+            continue
+
+    return f"[AGENT ERROR] {agent_name} failed across all {len(keys)} API keys: {last_error}. Proceeding with available data."
 
 
 def _parse_kpis(ceo_text: str) -> list[str]:
