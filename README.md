@@ -16,14 +16,14 @@ Agentic Swarm is a LangGraph-powered multi-agent decision engine with a web inte
 
 | Agent | Role | Input | Output |
 |-------|------|-------|--------|
-| Research Agent (NEXUS) | Market analysis - opportunity, competitors, risks, target customers | Business problem statement | 4-point research brief forwarded to Finance, Marketing, Operations |
-| Finance Agent | Cost, revenue, break-even, financial risks | Business problem + Research output | RECOMMEND or DO NOT RECOMMEND with key financial reason |
-| Marketing Agent (ECHO) | Target segment, positioning, acquisition channels, marketing risk | Business problem + Research output | GO or NO-GO with channel strategy |
-| Challenge Agent (VEX) | Identifies conflict between Finance and Marketing | Finance output + Marketing output | Named conflict between agents + CEO resolution proposal |
-| Operations Agent (AURA) | Feasibility, execution risks, regulatory, resource requirements | Business problem + all dept outputs | FEASIBLE or NOT FEASIBLE + biggest operational risk |
-| Devil's Advocate (COG) | Challenges the most dangerous assumption across all agents | All department outputs | ASSUMPTION CHALLENGED + WHY IT COULD BE WRONG + WHAT CEO MUST VERIFY |
-| CEO Agent (PRIME) | Synthesizes all agent inputs into final executive directive | All 6 agent outputs | DECISION + EVIDENCE USED + REJECTED ALTERNATIVE + KEY RISKS + IMPLEMENTATION + 3 KPIs |
-| Surprise Agent | Re-evaluates CEO decision against a new market event | CEO decision + surprise event | WHAT CHANGED + WHAT STAYS THE SAME + REVISED DECISION + UPDATED KPIs |
+| Business Research Agent (NEXUS) | Market analysis - opportunity, segment demand, competitors, risks | Business problem statement | 4-point research brief forwarded to Finance, Marketing, Compliance |
+| Finance and Treasury Agent (AURA) | Cost of funds, liquidity buffers, revenue, break-even, financial margins | Business problem + Research output | RECOMMEND or DO NOT RECOMMEND with key financial rationale |
+| Marketing and Sales Agent (ECHO) | Target segment, positioning, acquisition channels, CAC, marketing risk | Business problem + Research output | GO or NO-GO with channel acquisition strategy |
+| Compliance and Customer Protection Agent (COG) | Fair customer treatment, compliance guidelines, operational capacity, execution risk | Business problem + all dept outputs | FEASIBLE or NOT FEASIBLE with operational/compliance risk |
+| Credit Risk Agent (VEX) | Credit risk, default modeling, stress-tests most dangerous assumption | All department outputs | ASSUMPTION CHALLENGED + WHY IT COULD BE WRONG + WHAT CEO MUST VERIFY |
+| CEO Agent (PRIME) | Synthesizes all agent inputs into final executive directive | All department outputs | DECISION + EVIDENCE USED + REJECTED ALTERNATIVE + KEY RISKS + IMPLEMENTATION + 3 KPIs |
+| Adaptive Scenario Agent | Re-evaluates corporate decision against a new market or regulatory shock | CEO decision + surprise event | WHAT CHANGED + WHAT STAYS THE SAME + REVISED DECISION + UPDATED KPIs |
+
 
 ---
 
