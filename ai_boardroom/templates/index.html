@@ -1598,6 +1598,8 @@ function setSidebarStage(stage) {
   updateStageUI(stage);
 }
 
+let currentAudio = null;
+
 function speak(agentId, text, callback) {
   const agent = STATE.agents.find(a => a.id === agentId);
   if (!agent) { if(callback) callback(); return; }
@@ -1607,6 +1609,53 @@ function speak(agentId, text, callback) {
   const lineEl = document.getElementById('line-' + agentId + '-ceo');
   if (lineEl) { lineEl.classList.add('active'); }
 
+  if (!STATE.voiceEnabled) {
+    const duration = Math.min(Math.max(text.length * 28, 800), 3200);
+    setTimeout(() => {
+      setNodeSpeaking(agentId, false);
+      if (lineEl) lineEl.classList.remove('active');
+      if (callback) callback();
+    }, duration);
+    return;
+  }
+
+  if (currentAudio) {
+    try { currentAudio.pause(); currentAudio.currentTime = 0; } catch(e) {}
+    currentAudio = null;
+  }
+
+  // Attempt ElevenLabs Custom Voice Synthesis via /api/tts
+  fetch('/api/tts', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ agent: agentId, text: text })
+  })
+  .then(res => {
+    if (!res.ok) throw new Error('ElevenLabs unavailable');
+    return res.blob();
+  })
+  .then(blob => {
+    const audioUrl = URL.createObjectURL(blob);
+    currentAudio = new Audio(audioUrl);
+    currentAudio.onended = () => {
+      setNodeSpeaking(agentId, false);
+      if (lineEl) lineEl.classList.remove('active');
+      currentAudio = null;
+      if (callback) callback();
+    };
+    currentAudio.onerror = () => {
+      fallbackToBrowserTTS(agentId, text, lineEl, callback);
+    };
+    currentAudio.play().catch(() => {
+      fallbackToBrowserTTS(agentId, text, lineEl, callback);
+    });
+  })
+  .catch(() => {
+    fallbackToBrowserTTS(agentId, text, lineEl, callback);
+  });
+}
+
+function fallbackToBrowserTTS(agentId, text, lineEl, callback) {
   if (STATE.voiceEnabled && 'speechSynthesis' in window) {
     window.speechSynthesis.cancel();
     const utter = new SpeechSynthesisUtterance(text);
