@@ -53,6 +53,9 @@ def tts():
 
     # Truncate text if long to preserve response speed
     clean_text = text[:600]
+    
+    # Get ElevenLabs model ID from environment
+    model_id = os.getenv("ELEVENLABS_MODEL_ID", "eleven_flash_v2_5")
 
     headers = {
         "xi-api-key": eleven_key,
@@ -125,7 +128,10 @@ def testcases_report():
 
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5000)
+    # Use debug=False for production, True only for development
+    import sys
+    debug_mode = "--debug" in sys.argv
+    app.run(debug=debug_mode, port=5000)
 
 
 
