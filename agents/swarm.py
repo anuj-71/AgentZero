@@ -44,12 +44,18 @@ _CURRENT_KEY_INDEX = 0
 _all_keys = _get_api_keys()
 _primary_key = _all_keys[0] if _all_keys else None
 
+DOMAIN_CONTEXT = (
+    "You are operating in a financial lending domain. All decisions must include specific numbers: "
+    "INR amounts, percentages, loan counts, default rates, margins. Never give only qualitative output. "
+    "If a constraint is provided in the business problem, check it explicitly and state whether it is met or breached. "
+)
+
 research_llm = ChatGoogleGenerativeAI(model=model_name, api_key=_primary_key)
 finance_llm = ChatGoogleGenerativeAI(model=model_name, api_key=_primary_key)
 marketing_llm = ChatGoogleGenerativeAI(model=model_name, api_key=_primary_key)
 challenge_llm = ChatGoogleGenerativeAI(model=model_name, api_key=_primary_key)
-operations_llm = ChatGoogleGenerativeAI(model=model_name, api_key=_primary_key)
-devils_llm = ChatGoogleGenerativeAI(model=model_name, api_key=_primary_key)
+credit_risk_llm = ChatGoogleGenerativeAI(model=model_name, api_key=_primary_key)
+compliance_llm = ChatGoogleGenerativeAI(model=model_name, api_key=_primary_key)
 ceo_llm = ChatGoogleGenerativeAI(model=model_name, api_key=_primary_key)
 surprise_llm = ChatGoogleGenerativeAI(model=model_name, api_key=_primary_key)
 
@@ -63,8 +69,8 @@ class SwarmState(TypedDict):
     research_output: str
     finance_output: str
     marketing_output: str
-    operations_output: str
-    devils_advocate_output: str
+    credit_risk_output: str
+    compliance_output: str
     challenge_log: str
     ceo_decision: str
     kpis: list[str]
@@ -141,22 +147,24 @@ def _parse_kpis(ceo_text: str) -> list[str]:
 
 def research_agent(state: SwarmState) -> dict:
     system_prompt = (
+        DOMAIN_CONTEXT +
         "You are the Business Research Agent. Analyse the business problem provided. "
         "Cover: market opportunity, target customers, key competitors, main risks. "
         "Be specific. Output structured findings in 4 bullet points maximum. "
-        "End your output with: FINDINGS FORWARDED TO: Finance and Treasury Agent, Marketing and Sales Agent, Compliance and Operations Agent"
+        "End your output with: FINDINGS FORWARDED TO: Finance Agent, Marketing Agent, Operations Agent"
     )
     user_input = state["business_problem"]
-    output = _call_llm(research_llm, system_prompt, user_input, "Business Research Agent")
+    output = _call_llm(research_llm, system_prompt, user_input, "Research Agent")
     return {
         "research_output": output,
         "current_stage": "research",
-        "trace": ["[BUSINESS RESEARCH] Analysis complete - forwarded to Finance, Marketing, Operations"],
+        "trace": ["[RESEARCH] Analysis complete - forwarded to Finance, Marketing, Operations"],
     }
 
 
 def finance_agent(state: SwarmState) -> dict:
     system_prompt = (
+        DOMAIN_CONTEXT +
         "You are the Finance and Treasury Agent. You have received findings from the Business Research Agent. "
         "Based on the business problem and research findings provided, evaluate: estimated costs, cost of funds, "
         "liquidity buffers, revenue potential, break-even assumptions, and financial margins. "
@@ -166,16 +174,17 @@ def finance_agent(state: SwarmState) -> dict:
         f"Business Problem:\n{state['business_problem']}\n\n"
         f"Research Findings:\n{state['research_output']}"
     )
-    output = _call_llm(finance_llm, system_prompt, user_input, "Finance and Treasury Agent")
+    output = _call_llm(finance_llm, system_prompt, user_input, "Finance Agent")
     return {
         "finance_output": output,
         "current_stage": "finance",
-        "trace": ["[SHARE] Research brief ingested by Finance and Treasury", "[FINANCE AND TREASURY] Evaluation complete"],
+        "trace": ["[SHARE] Research brief ingested by Finance", "[FINANCE] Evaluation complete"],
     }
 
 
 def marketing_agent(state: SwarmState) -> dict:
     system_prompt = (
+        DOMAIN_CONTEXT +
         "You are the Marketing and Sales Agent. You have received findings from the Business Research Agent. "
         "Based on the business problem and research findings, define: target customer segment, "
         "positioning statement, top 2 acquisition channels, one key marketing risk. "
@@ -185,80 +194,79 @@ def marketing_agent(state: SwarmState) -> dict:
         f"Business Problem:\n{state['business_problem']}\n\n"
         f"Research Findings:\n{state['research_output']}"
     )
-    output = _call_llm(marketing_llm, system_prompt, user_input, "Marketing and Sales Agent")
+    output = _call_llm(marketing_llm, system_prompt, user_input, "Marketing Agent")
     return {
         "marketing_output": output,
         "current_stage": "marketing",
-        "trace": ["[SHARE] Research brief ingested by Marketing and Sales", "[MARKETING AND SALES] Strategy complete"],
+        "trace": ["[SHARE] Research brief ingested by Marketing", "[MARKETING] Strategy complete"],
     }
 
 
 def challenge_node(state: SwarmState) -> dict:
     system_prompt = (
+        DOMAIN_CONTEXT +
         "You are the Inter-Department Conflict Reviewer. Finance Agent recommends: [their output]. "
         "Marketing Agent recommends: [their output]. Find where these two departments conflict (e.g. growth vs cost/risk). "
         "State what Finance says, what Marketing says, and why they conflict. "
         "Then propose the resolution the CEO should consider."
     )
     user_input = (
-        f"Finance and Treasury Agent recommends:\n{state['finance_output']}\n\n"
-        f"Marketing and Sales Agent recommends:\n{state['marketing_output']}"
+        f"Finance Agent recommends:\n{state['finance_output']}\n\n"
+        f"Marketing Agent recommends:\n{state['marketing_output']}"
     )
-    output = _call_llm(challenge_llm, system_prompt, user_input, "Conflict Reviewer")
+    output = _call_llm(challenge_llm, system_prompt, user_input, "Challenge Reviewer")
     return {
         "challenge_log": output,
         "current_stage": "challenge",
-        "trace": ["[SHARE] Cross-department briefs routed to Conflict Review Node", "[CONFLICT REVIEW] Finance vs Marketing conflict identified"],
+        "trace": ["[SHARE] Cross-department briefs routed to Challenge Node", "[CHALLENGE] Finance vs Marketing conflict identified"],
     }
 
 
-def operations_agent(state: SwarmState) -> dict:
+def credit_risk_agent(state: SwarmState) -> dict:
     system_prompt = (
-        "You are the Compliance and Customer Protection Agent (with Operations responsibility). You have received outputs from Research, Finance, and Marketing Agents. "
-        "Evaluate: operational capacity, compliance and regulatory considerations, fair customer treatment, execution bottlenecks, resource requirements. "
-        "Give a FEASIBLE or NOT FEASIBLE verdict with the single biggest operational or compliance risk."
-    )
-    user_input = (
-        f"Business Problem:\n{state['business_problem']}\n\n"
-        f"Research Findings:\n{state['research_output']}\n\n"
-        f"Finance Evaluation:\n{state['finance_output']}\n\n"
-        f"Marketing Strategy:\n{state['marketing_output']}"
-    )
-    output = _call_llm(operations_llm, system_prompt, user_input, "Compliance and Operations Agent")
-    return {
-        "operations_output": output,
-        "current_stage": "operations",
-        "trace": ["[SHARE] Department dossiers routed to Compliance and Operations", "[COMPLIANCE AND OPERATIONS] Feasibility assessed"],
-    }
-
-
-def devils_advocate(state: SwarmState) -> dict:
-    system_prompt = (
-        "You are the Credit Risk Agent (and Devil's Advocate). You have received outputs from Research, Finance, Marketing, AND Compliance/Operations Agents. "
-        "Your role is to rigorously evaluate credit risk, default exposure, and challenge the single most dangerous assumption being made across all departments. Output exactly: "
-        "ASSUMPTION CHALLENGED: [state it] WHY IT COULD BE WRONG: [credit risk or failure scenario] "
-        "WHAT CEO MUST VERIFY: [one specific check or risk control]"
+        DOMAIN_CONTEXT +
+        "You are the Credit Risk Agent for an Indian digital lending company. Given the business problem and all department inputs, calculate: expected portfolio default rate, stress-test the portfolio under pessimistic assumptions, flag any segment where default risk exceeds limits, recommend maximum exposure per segment, and give a APPROVE or DO NOT APPROVE verdict with the specific risk threshold being breached or cleared. Always output exact numbers: percentages, INR amounts, loan counts. Never give only qualitative output."
     )
     user_input = (
         f"Business Problem:\n{state['business_problem']}\n\n"
         f"Research Findings:\n{state['research_output']}\n\n"
         f"Finance Evaluation:\n{state['finance_output']}\n\n"
         f"Marketing Strategy:\n{state['marketing_output']}\n\n"
-        f"Compliance & Operations Assessment:\n{state['operations_output']}"
+        f"Challenge Review:\n{state['challenge_log']}"
     )
-    output = _call_llm(devils_llm, system_prompt, user_input, "Credit Risk Agent")
+    output = _call_llm(credit_risk_llm, system_prompt, user_input, "Credit Risk Agent")
     return {
-        "devils_advocate_output": output,
-        "current_stage": "devils_advocate",
-        "trace": ["[SHARE] Operations and financial models routed to Credit Risk Agent", "[CREDIT RISK] Core assumption and default exposure challenged"],
+        "credit_risk_output": output,
+        "current_stage": "credit_risk",
+        "trace": ["[CREDIT RISK] Portfolio stress test complete"],
+    }
+
+
+def compliance_agent(state: SwarmState) -> dict:
+    system_prompt = (
+        DOMAIN_CONTEXT +
+        "You are the Compliance and Customer Protection Agent for an Indian digital lending company operating under RBI guidelines. Review the proposed strategy against these hard limits: maximum customer interest rate 19% per year, no discriminatory lending criteria, portfolio default must stay within approved threshold, liquidity reserve must be maintained, no segment concentration beyond 70% of capital. Flag every constraint violation with the exact rule breached. Give COMPLIANT or NON-COMPLIANT verdict with specific line items. Always cite the exact constraint being checked."
+    )
+    user_input = (
+        f"Business Problem:\n{state['business_problem']}\n\n"
+        f"Research Findings:\n{state['research_output']}\n\n"
+        f"Finance Evaluation:\n{state['finance_output']}\n\n"
+        f"Marketing Strategy:\n{state['marketing_output']}\n\n"
+        f"Credit Risk Assessment:\n{state['credit_risk_output']}"
+    )
+    output = _call_llm(compliance_llm, system_prompt, user_input, "Compliance Agent")
+    return {
+        "compliance_output": output,
+        "current_stage": "compliance",
+        "trace": ["[COMPLIANCE] Regulatory check complete"],
     }
 
 
 def ceo_agent(state: SwarmState) -> dict:
     system_prompt = (
+        DOMAIN_CONTEXT +
         "You are the CEO Agent. You are making the final executive decision for the company. "
-        "You have received inputs from: Business Research, Finance and Treasury, Marketing and Sales, Compliance/Operations, "
-        "Conflict Reviewer, and Credit Risk Agents.\n\n"
+        "You have received inputs from 6 specialist agents: Research, Finance, Marketing, Challenge, Credit Risk, and Compliance.\n\n"
         "First, compare at least two viable strategies in a STRATEGY COMPARISON section.\n"
         "Then synthesize all inputs and output your decision in this EXACT format:\n\n"
         "STRATEGY COMPARISON: [compare Strategy A vs Strategy B with key trade-offs]\n\n"
@@ -266,7 +274,7 @@ def ceo_agent(state: SwarmState) -> dict:
         "EVIDENCE USED: [explain which department agent outputs influenced this decision, citing agents by name]\n\n"
         "REJECTED ALTERNATIVE: [state the alternative strategy considered and the specific reason it was rejected]\n\n"
         "KEY RISKS: [state 2 critical risks and the trade-offs accepted]\n\n"
-        "IMPLEMENTATION: [numbered list of 3 concrete next steps with responsible department functions, e.g. Step 1 (Compliance/Operations): ..., Step 2 (Marketing): ..., Step 3 (Finance): ...]\n\n"
+        "IMPLEMENTATION: [numbered list of 3 concrete next steps with responsible department functions, e.g. Step 1 (Credit Risk): ..., Step 2 (Compliance): ..., Step 3 (Finance): ...]\n\n"
         "KPIs: [numbered list of at least 3 measurable business KPIs with numerical targets]"
     )
     user_input = (
@@ -274,8 +282,8 @@ def ceo_agent(state: SwarmState) -> dict:
         f"Research Findings:\n{state['research_output']}\n\n"
         f"Finance Evaluation:\n{state['finance_output']}\n\n"
         f"Marketing Strategy:\n{state['marketing_output']}\n\n"
-        f"Compliance & Operations Assessment:\n{state['operations_output']}\n\n"
-        f"Credit Risk Challenge:\n{state['devils_advocate_output']}\n\n"
+        f"Credit Risk Evaluation:\n{state['credit_risk_output']}\n\n"
+        f"Compliance Assessment:\n{state['compliance_output']}\n\n"
         f"Conflict Review:\n{state['challenge_log']}"
     )
     output = _call_llm(ceo_llm, system_prompt, user_input, "CEO Agent")
@@ -284,12 +292,13 @@ def ceo_agent(state: SwarmState) -> dict:
         "ceo_decision": output,
         "kpis": kpis,
         "current_stage": "ceo",
-        "trace": ["[COMPARE] Executive strategy trade-offs analyzed", "[CEO DECISION] Final executive directive issued"],
+        "trace": ["[COMPARE] Executive strategy trade-offs analyzed", "[CEO] Final decision issued"],
     }
 
 
 def surprise_agent(state: SwarmState) -> dict:
     system_prompt = (
+        DOMAIN_CONTEXT +
         "A surprise business event has occurred that impacts the company. "
         "You are the Adaptive CEO Agent. Read the original CEO decision and the surprise event. "
         "Re-evaluate the strategy against this new information. "
@@ -307,7 +316,7 @@ def surprise_agent(state: SwarmState) -> dict:
     return {
         "revised_decision": output,
         "current_stage": "surprise",
-        "trace": ["[SURPRISE ADAPTATION] Revised strategy issued"],
+        "trace": ["[SURPRISE] Revised decision issued"],
     }
 
 
@@ -324,8 +333,8 @@ workflow.add_node("research_agent", research_agent)
 workflow.add_node("finance_agent", finance_agent)
 workflow.add_node("marketing_agent", marketing_agent)
 workflow.add_node("challenge_node", challenge_node)
-workflow.add_node("operations_agent", operations_agent)
-workflow.add_node("devils_advocate", devils_advocate)
+workflow.add_node("credit_risk_agent", credit_risk_agent)
+workflow.add_node("compliance_agent", compliance_agent)
 workflow.add_node("ceo_agent", ceo_agent)
 workflow.add_node("surprise_agent", surprise_agent)
 
@@ -334,9 +343,9 @@ workflow.add_edge("research_agent", "finance_agent")
 workflow.add_edge("research_agent", "marketing_agent")
 workflow.add_edge("finance_agent", "challenge_node")
 workflow.add_edge("marketing_agent", "challenge_node")
-workflow.add_edge("challenge_node", "operations_agent")
-workflow.add_edge("operations_agent", "devils_advocate")
-workflow.add_edge("devils_advocate", "ceo_agent")
+workflow.add_edge("challenge_node", "credit_risk_agent")
+workflow.add_edge("credit_risk_agent", "compliance_agent")
+workflow.add_edge("compliance_agent", "ceo_agent")
 workflow.add_conditional_edges(
     "ceo_agent",
     _route_after_ceo,
@@ -353,8 +362,8 @@ def run_swarm(business_problem: str, surprise: str = "") -> dict:
         "research_output": "",
         "finance_output": "",
         "marketing_output": "",
-        "operations_output": "",
-        "devils_advocate_output": "",
+        "credit_risk_output": "",
+        "compliance_output": "",
         "challenge_log": "",
         "ceo_decision": "",
         "kpis": [],
