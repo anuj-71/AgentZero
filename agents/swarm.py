@@ -25,10 +25,15 @@ if not api_key:
 
 model_name = os.getenv("GEMINI_MODEL", "gemini-3.1-flash-lite")
 
-llm = ChatGoogleGenerativeAI(
-    model=model_name,
-    api_key=api_key,
-)
+research_llm = ChatGoogleGenerativeAI(model=model_name, api_key=api_key)
+finance_llm = ChatGoogleGenerativeAI(model=model_name, api_key=api_key)
+marketing_llm = ChatGoogleGenerativeAI(model=model_name, api_key=api_key)
+challenge_llm = ChatGoogleGenerativeAI(model=model_name, api_key=api_key)
+operations_llm = ChatGoogleGenerativeAI(model=model_name, api_key=api_key)
+devils_llm = ChatGoogleGenerativeAI(model=model_name, api_key=api_key)
+ceo_llm = ChatGoogleGenerativeAI(model=model_name, api_key=api_key)
+surprise_llm = ChatGoogleGenerativeAI(model=model_name, api_key=api_key)
+
 
 
 def take_last(current: str, new: str) -> str:
@@ -40,6 +45,8 @@ class SwarmState(TypedDict):
     research_output: str
     finance_output: str
     marketing_output: str
+    operations_output: str
+    devils_advocate_output: str
     challenge_log: str
     ceo_decision: str
     kpis: list[str]
@@ -49,24 +56,37 @@ class SwarmState(TypedDict):
     trace: Annotated[list[str], operator.add]
 
 
-def _call_llm(system_prompt: str, user_content: str) -> str:
-    messages = [
-        {"role": "system", "content": system_prompt},
-        {"role": "user", "content": user_content},
-    ]
-    response = llm.invoke(messages)
-    content = response.content
-    if isinstance(content, str):
-        return content.strip()
-    if isinstance(content, list):
-        parts = []
-        for part in content:
-            if isinstance(part, dict) and "text" in part:
-                parts.append(part["text"])
-            elif isinstance(part, str):
-                parts.append(part)
-        return "".join(parts).strip()
-    return str(content).strip()
+def _clean(text: str) -> str:
+    text = re.sub(r"\*\*(.*?)\*\*", r"\1", text)
+    text = re.sub(r"\*(.*?)\*", r"\1", text)
+    text = re.sub(r"#{1,6}\s*", "", text)
+    text = re.sub(r"`{1,3}", "", text)
+    return text.strip()
+
+
+def _call_llm(llm_instance: ChatGoogleGenerativeAI, system_prompt: str, user_content: str, agent_name: str = "Agent") -> str:
+    try:
+        messages = [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_content},
+        ]
+        response = llm_instance.invoke(messages)
+        content = response.content
+        if isinstance(content, str):
+            raw_text = content.strip()
+        elif isinstance(content, list):
+            parts = []
+            for part in content:
+                if isinstance(part, dict) and "text" in part:
+                    parts.append(part["text"])
+                elif isinstance(part, str):
+                    parts.append(part)
+            raw_text = "".join(parts).strip()
+        else:
+            raw_text = str(content).strip()
+        return _clean(raw_text)
+    except Exception as e:
+        return f"[AGENT ERROR] {agent_name} failed: {str(e)}. Proceeding with available data."
 
 
 def _parse_kpis(ceo_text: str) -> list[str]:
@@ -90,81 +110,128 @@ def research_agent(state: SwarmState) -> dict:
     system_prompt = (
         "You are the Business Research Agent. Analyse the business problem provided. "
         "Cover: market opportunity, target customers, key competitors, main risks. "
-        "Be specific. Output structured findings in 4 bullet points maximum."
+        "Be specific. Output structured findings in 4 bullet points maximum. "
+        "End your output with: FINDINGS FORWARDED TO: Finance Agent, Marketing Agent, Operations Agent"
     )
     user_input = state["business_problem"]
-    output = _call_llm(system_prompt, user_input)
+    output = _call_llm(research_llm, system_prompt, user_input, "Research Agent")
     return {
         "research_output": output,
         "current_stage": "research",
-        "trace": ["[RESEARCH] Analysis complete"],
+        "trace": ["[RESEARCH] Analysis complete - forwarded to Finance, Marketing, Operations"],
     }
 
 
 def finance_agent(state: SwarmState) -> dict:
     system_prompt = (
-        "You are the Finance Agent. Based on the business problem and research findings provided, "
-        "evaluate: estimated costs, revenue potential, break-even assumptions, financial risks. "
+        "You are the Finance Agent. You have received findings from the Business Research Agent. "
+        "Based on the business problem and research findings provided, evaluate: estimated costs, "
+        "revenue potential, break-even assumptions, financial risks. "
         "Give a clear RECOMMEND or DO NOT RECOMMEND with one key financial reason."
     )
     user_input = (
         f"Business Problem:\n{state['business_problem']}\n\n"
         f"Research Findings:\n{state['research_output']}"
     )
-    output = _call_llm(system_prompt, user_input)
+    output = _call_llm(finance_llm, system_prompt, user_input, "Finance Agent")
     return {
         "finance_output": output,
         "current_stage": "finance",
-        "trace": ["[FINANCE] Evaluation complete"],
+        "trace": ["[SHARE] Research brief ingested by Finance", "[FINANCE] Evaluation complete"],
     }
 
 
 def marketing_agent(state: SwarmState) -> dict:
     system_prompt = (
-        "You are the Marketing and Sales Agent. Based on the business problem and research findings, "
-        "define: target customer segment, positioning statement, top 2 acquisition channels, "
-        "one key marketing risk. Give a clear GO or NO-GO recommendation."
+        "You are the Marketing and Sales Agent. You have received findings from the Business Research Agent. "
+        "Based on the business problem and research findings, define: target customer segment, "
+        "positioning statement, top 2 acquisition channels, one key marketing risk. "
+        "Give a clear GO or NO-GO recommendation."
     )
     user_input = (
         f"Business Problem:\n{state['business_problem']}\n\n"
         f"Research Findings:\n{state['research_output']}"
     )
-    output = _call_llm(system_prompt, user_input)
+    output = _call_llm(marketing_llm, system_prompt, user_input, "Marketing Agent")
     return {
         "marketing_output": output,
         "current_stage": "marketing",
-        "trace": ["[MARKETING] Strategy complete"],
+        "trace": ["[SHARE] Research brief ingested by Marketing", "[MARKETING] Strategy complete"],
     }
 
 
 def challenge_node(state: SwarmState) -> dict:
     system_prompt = (
-        "You are a critical reviewer. Read the Finance and Marketing outputs. "
-        "Find the single most important disagreement or conflict between them. "
+        "You are a critical reviewer. Finance Agent recommends: [their output]. "
+        "Marketing Agent recommends: [their output]. Find where these two agents conflict. "
         "State what Finance says, what Marketing says, and why they conflict. "
         "Then propose the resolution the CEO should consider."
     )
     user_input = (
-        f"Finance Evaluation:\n{state['finance_output']}\n\n"
-        f"Marketing Strategy:\n{state['marketing_output']}"
+        f"Finance Agent recommends:\n{state['finance_output']}\n\n"
+        f"Marketing Agent recommends:\n{state['marketing_output']}"
     )
-    output = _call_llm(system_prompt, user_input)
+    output = _call_llm(challenge_llm, system_prompt, user_input, "Challenge Reviewer")
     return {
         "challenge_log": output,
         "current_stage": "challenge",
-        "trace": ["[CHALLENGE] Disagreement identified"],
+        "trace": ["[SHARE] Cross-department briefs routed to Challenge Node", "[CHALLENGE] Finance vs Marketing conflict identified"],
+    }
+
+
+def operations_agent(state: SwarmState) -> dict:
+    system_prompt = (
+        "You are the Operations and Risk Agent. You have received outputs from Research, Finance, and Marketing Agents. "
+        "Evaluate: operational feasibility, execution risks, regulatory considerations, resource requirements. "
+        "Give a FEASIBLE or NOT FEASIBLE verdict with the single biggest operational risk."
+    )
+    user_input = (
+        f"Business Problem:\n{state['business_problem']}\n\n"
+        f"Research Findings:\n{state['research_output']}\n\n"
+        f"Finance Evaluation:\n{state['finance_output']}\n\n"
+        f"Marketing Strategy:\n{state['marketing_output']}"
+    )
+    output = _call_llm(operations_llm, system_prompt, user_input, "Operations Agent")
+    return {
+        "operations_output": output,
+        "current_stage": "operations",
+        "trace": ["[SHARE] Department dossiers routed to Operations", "[OPERATIONS] Feasibility assessed"],
+    }
+
+
+def devils_advocate(state: SwarmState) -> dict:
+    system_prompt = (
+        "You are the Devil's Advocate. You have received outputs from Research, Finance, Marketing, AND Operations Agents. "
+        "After reviewing all department agent outputs, identify the single most dangerous assumption being made. Output exactly: "
+        "ASSUMPTION CHALLENGED: [state it] WHY IT COULD BE WRONG: [scenario where it fails] "
+        "WHAT CEO MUST VERIFY: [one specific check]"
+    )
+    user_input = (
+        f"Business Problem:\n{state['business_problem']}\n\n"
+        f"Research Findings:\n{state['research_output']}\n\n"
+        f"Finance Evaluation:\n{state['finance_output']}\n\n"
+        f"Marketing Strategy:\n{state['marketing_output']}\n\n"
+        f"Operations Assessment:\n{state['operations_output']}"
+    )
+    output = _call_llm(devils_llm, system_prompt, user_input, "Devil's Advocate")
+    return {
+        "devils_advocate_output": output,
+        "current_stage": "devils_advocate",
+        "trace": ["[SHARE] Operations and financial models routed to Devil's Advocate", "[DEVIL'S ADVOCATE] Core assumption challenged"],
     }
 
 
 def ceo_agent(state: SwarmState) -> dict:
     system_prompt = (
-        "You are the CEO Agent. You have received inputs from Research, Finance, Marketing, "
-        "and a Challenge review. Your output must contain exactly these sections:\n"
+        "You are the CEO Agent. You have received inputs from 6 specialist agents: "
+        "Research, Finance, Marketing, Challenge, Operations, and Devil's Advocate. "
+        "Your output must contain exactly these sections:\n"
+        "STRATEGY COMPARISON: [compare 2 viable options, e.g. Strategy A vs Strategy B]\n"
         "DECISION: [one clear sentence]\n"
-        "EVIDENCE USED: [2-3 points from department agents]\n"
+        "EVIDENCE USED: [2-3 points citing specific agents by name]\n"
         "REJECTED ALTERNATIVE: [one option and why rejected]\n"
         "KEY RISKS: [2 risks]\n"
-        "IMPLEMENTATION: [3 ordered steps]\n"
+        "IMPLEMENTATION: [3 ordered steps naming the responsible department/owner for each step, e.g. Step 1 (Operations): ..., Step 2 (Marketing): ...]\n"
         "KPIs: [exactly 3 measurable KPIs]"
     )
     user_input = (
@@ -172,15 +239,17 @@ def ceo_agent(state: SwarmState) -> dict:
         f"Research Findings:\n{state['research_output']}\n\n"
         f"Finance Evaluation:\n{state['finance_output']}\n\n"
         f"Marketing Strategy:\n{state['marketing_output']}\n\n"
-        f"Challenge Review:\n{state['challenge_log']}"
+        f"Challenge Review:\n{state['challenge_log']}\n\n"
+        f"Operations Assessment:\n{state['operations_output']}\n\n"
+        f"Devil's Advocate Challenge:\n{state['devils_advocate_output']}"
     )
-    output = _call_llm(system_prompt, user_input)
+    output = _call_llm(ceo_llm, system_prompt, user_input, "CEO Agent")
     kpis = _parse_kpis(output)
     return {
         "ceo_decision": output,
         "kpis": kpis,
         "current_stage": "ceo",
-        "trace": ["[CEO] Final decision issued"],
+        "trace": ["[COMPARE] Executive strategy trade-offs analyzed", "[CEO] Final decision issued"],
     }
 
 
@@ -198,7 +267,7 @@ def surprise_agent(state: SwarmState) -> dict:
         f"Original CEO Decision:\n{state['ceo_decision']}\n\n"
         f"Surprise Event:\n{state['surprise_input']}"
     )
-    output = _call_llm(system_prompt, user_input)
+    output = _call_llm(surprise_llm, system_prompt, user_input, "Surprise Agent")
     return {
         "revised_decision": output,
         "current_stage": "surprise",
@@ -219,6 +288,8 @@ workflow.add_node("research_agent", research_agent)
 workflow.add_node("finance_agent", finance_agent)
 workflow.add_node("marketing_agent", marketing_agent)
 workflow.add_node("challenge_node", challenge_node)
+workflow.add_node("operations_agent", operations_agent)
+workflow.add_node("devils_advocate", devils_advocate)
 workflow.add_node("ceo_agent", ceo_agent)
 workflow.add_node("surprise_agent", surprise_agent)
 
@@ -227,7 +298,9 @@ workflow.add_edge("research_agent", "finance_agent")
 workflow.add_edge("research_agent", "marketing_agent")
 workflow.add_edge("finance_agent", "challenge_node")
 workflow.add_edge("marketing_agent", "challenge_node")
-workflow.add_edge("challenge_node", "ceo_agent")
+workflow.add_edge("challenge_node", "operations_agent")
+workflow.add_edge("operations_agent", "devils_advocate")
+workflow.add_edge("devils_advocate", "ceo_agent")
 workflow.add_conditional_edges(
     "ceo_agent",
     _route_after_ceo,
@@ -244,6 +317,8 @@ def run_swarm(business_problem: str, surprise: str = "") -> dict:
         "research_output": "",
         "finance_output": "",
         "marketing_output": "",
+        "operations_output": "",
+        "devils_advocate_output": "",
         "challenge_log": "",
         "ceo_decision": "",
         "kpis": [],

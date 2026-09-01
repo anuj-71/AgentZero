@@ -9,6 +9,13 @@ CORS(app)
 
 @app.route("/")
 def index():
+    if os.path.exists(os.path.join("ai_boardroom", "templates", "index.html")):
+        return send_from_directory(os.path.join("ai_boardroom", "templates"), "index.html")
+    return send_from_directory("frontend", "index.html")
+
+
+@app.route("/terminal")
+def terminal():
     return send_from_directory("frontend", "index.html")
 
 
@@ -26,6 +33,8 @@ def run():
             "research": result.get("research_output", ""),
             "finance": result.get("finance_output", ""),
             "marketing": result.get("marketing_output", ""),
+            "operations": result.get("operations_output", ""),
+            "devils_advocate": result.get("devils_advocate_output", ""),
             "challenge": result.get("challenge_log", ""),
             "ceo_decision": result.get("ceo_decision", ""),
             "kpis": result.get("kpis", []),
