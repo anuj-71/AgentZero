@@ -23,9 +23,18 @@ Agentic Swarm is a LangGraph-powered multi-agent decision engine with a web inte
 | Credit Risk Agent (VEX) | Credit risk, default modeling, stress-tests most dangerous assumption | All department outputs | ASSUMPTION CHALLENGED + WHY IT COULD BE WRONG + WHAT CEO MUST VERIFY |
 | CEO Agent (PRIME) | Synthesizes all agent inputs into final executive directive | All department outputs | DECISION + EVIDENCE USED + REJECTED ALTERNATIVE + KEY RISKS + IMPLEMENTATION + 3 KPIs |
 | Adaptive Scenario Agent | Re-evaluates corporate decision against a new market or regulatory shock | CEO decision + surprise event | WHAT CHANGED + WHAT STAYS THE SAME + REVISED DECISION + UPDATED KPIs |
-
+| Conflict Reviewer | Identifies and reconciles material disagreements between departmental recommendations | Finance + Marketing outputs | Specific disagreement, reconciliation, and recommended resolution |
 
 ---
+
+## Evidence and Assumptions Policy
+
+- Challenge-specific inputs are taken from the supplied Theme A / FinSwarm test cases.
+- Supplied case facts are treated as constraints and are not silently modified.
+- Any model-derived estimates, forecasts, thresholds, or operational assumptions are clearly identified as assumptions.
+- External services and APIs are used only for the functionality described in this README.
+- The swarm does not rely on hardcoded final business decisions; recommendations are generated dynamically from the supplied business problem and agent context.
+- During a Surprise Round, changed facts are explicitly identified before the affected decision is reconsidered.
 
 ## Installation
 
@@ -167,9 +176,15 @@ The swarm uses LangGraph's `StateGraph` with typed state dictionary:
 4. **Conditional:** Surprise agent only activates if `surprise_input` is provided
 5. **State-based:** All agents read from and write to shared state dictionary
 
+#### Surprise Adaptation Protocol
+
+When a surprise event is provided, the system identifies changed assumptions, re-evaluates affected agents, performs a second challenge/comparison, and generates a revised decision with updated KPIs. The adaptation reuses the existing workflow and does not require a full rebuild.
 Structured boardroom execution: Each specialist agent runs as an isolated LangGraph node with its own domain prompt and context injection.
 
 ---
+### Debate and Termination Control
+
+The boardroom workflow is bounded and terminates after the defined decision stages. Debate/review is not an uncontrolled conversation loop and is capped at a maximum of three review cycles. The CEO node always produces a final decision, including when a non-CEO agent fails.
 
 ## Known Limitations and Failure Handling
 
@@ -202,7 +217,7 @@ All agent logic, system prompts, graph topology, state design, frontend UI, and 
 ```text
 AgentZero/
 ├── agents/
-│   └── swarm.py              # LangGraph swarm - all 8 agent nodes
+│   └── swarm.py              # LangGraph swarm - 8 identifiable workflow agents/nodes
 ├── ai_boardroom/
 │   ├── templates/
 │   │   └── index.html        # Interactive AI Boardroom UI & PDF Report Generator
@@ -295,117 +310,6 @@ python app.py
 # Open browser and navigate to:
 http://127.0.0.1:5000/api/testcases-report
 ```
-
----
-
-## Test Cases (Theme A - FinSwarm)
-
-Copy-paste these into the web interface to test the swarm:
-
-### TC1: BASELINE - LAUNCH THE SMALL-BUSINESS LOAN
-
-**Problem Statement:**
-```
-FinNova Capital has INR 30 crore available for a one-year small-business lending pilot and INR 60 lakh for customer acquisition. It can initially approve no more than 700 loans. Common costs: Cost of funds 10% per year, Servicing and collections cost 1.5% of principal per year, Product setup cost INR 18 lakh (deducted from acquisition budget). Segment data: Retail shops avg loan INR 4L, 5% default, 1500 demand, INR 2,000 CAC; Service SMEs avg loan INR 6L, 3.5% default, 900 demand, INR 3,500 CAC; Small manufacturers avg loan INR 9L, 4.5% default, 450 demand, INR 5,500 CAC. Constraints: Expected portfolio default <= 5%, Max interest 19%, No segment > 70% of capital, At least INR 3 crore liquid reserve, Max 700 approved loans. Question: Which segment mix, pricing, approval policy and launch plan creates the strongest risk-adjusted business outcome?
-```
-
-**Surprise:** (leave empty for TC1)
-
----
-
-### TC2: SURPRISE - CREDIT-RISK SPIKE
-
-**Problem Statement:**
-```
-FinNova Capital is running a one-year INR 27 crore pilot with 600 planned loans (Retail 45%, Service SMEs 35%, Small manufacturers 20%, 17% interest, 10% cost of funds, 1.5% servicing). New condition: Retail expected default rises to 8%, Service SME expected default rises to 5%, Small manufacturer expected default rises to 7%. Risk committee requires expected portfolio default to remain at or below 5.5%. Tighter approval rules reduce eligible demand by 25%. Pausing creates INR 12 lakh sunk launch costs. All changes within 30 days. Question: Should FinNova continue, redesign or pause the pilot? Specify revised portfolio, pricing, controls and implementation plan.
-```
-
-**Surprise:**
-```
-Retail default rose to 8%, Service SME to 5%, Manufacturer to 7%. Risk committee mandates <= 5.5% portfolio default.
-```
-
----
-
-### TC3: SURPRISE - MARKETING BUDGET CUT
-
-**Problem Statement:**
-```
-FinNova Capital will launch in eight weeks. Customer acquisition budget reduced from INR 60 lakh to INR 36 lakh. Setup requires INR 18 lakh, leaving INR 18 lakh for marketing. Target: >= 400 qualified applications, >= 160 funded loans. Channels: Partner accountants (INR 3,000 CPA, 45% conversion), Digital ads (INR 1,800 CPA, 25% conversion), Trade associations (INR 4,000 CPA, 60% conversion), Existing customer referrals (INR 1,200 CPA, 40% conversion, max 120 apps). Constraints: Marketing spend <= INR 18 lakh, max 65% in one channel, launch delay <= 2 weeks, transparent pricing and repayment obligations. Question: How should the reduced budget be allocated? Should target segment, launch timing or funded-loan target be revised?
-```
-
-**Surprise:**
-```
-Marketing budget cut to INR 18 lakh net. Must achieve >= 400 qualified applications and >= 160 funded loans across 4 channels.
-```
-
----
-
-### TC4: SURPRISE - STRICTER VERIFICATION REQUIREMENTS
-
-**Problem Statement:**
-```
-FinNova Capital processes 500 applications/week, approves 35% (175/week), 12-minute onboarding, uses manual verification for 10% (17.5/week), employs 8 reviewers (each does 4 reviews/day, 5 days/week = 160 reviews/week capacity). New requirement: Enhanced ownership and bank-statement verification before disbursement. Automated checks clear 60%. Remaining 40% require manual review (70/week). Options: Hire 4 temporary reviewers at INR 45,000/month each, reduce intake, appointment-based onboarding, delay launch up to 4 weeks, integrate automated verification service (costs INR 8 lakh, 2 weeks). Constraints: 3-month budget INR 15 lakh, median approval < 48 hours, complaint rate < 2%, zero disbursement before verification. Question: What operating model should FinNova implement to satisfy the new verification requirement without unacceptable delays or customer harm?
-```
-
-**Surprise:**
-```
-Mandatory enhanced verification: 40% manual review required before disbursement. 3-month budget INR 15 lakh, approval < 48 hours.
-```
-
----
-
-### TC5: LIVE TEST - FUNDING-COST AND FRAUD SHOCK
-
-**Problem Statement:**
-```
-FinNova Capital approved plan to deploy INR 24 crore across 500 loans (17.5% interest, 4.5% default, 10% cost of funds, 1.5% servicing, 50% retail, 2% suspected fraud). Live shock: Cost of funds rises to 13%, suspected retail fraud rises to 7%. Controls: Fraud-screening service (costs INR 1,200/retail app, cuts fraud 60%), reduce retail allocation, increase pricing up to 19%, introduce manual review, reduce total capital deployment, delay retail launch. Fixed limits: >= INR 3 crore liquid reserve, expected portfolio default after controls <= 5.5%, max customer interest 19%. Question: Revise portfolio, controls, pricing and launch decision. Identify which original assumptions are no longer valid.
-```
-
-**Surprise:**
-```
-Cost of funds surged to 13%, Retail fraud jumped to 7%. Maintain >= INR 3 crore liquid, default <= 5.5%, interest <= 19%.
-```
-
----
-
-## Important Notes
-
-### No Hardcoded Results
-
-- ✅ All decisions are generated dynamically by LLM agents
-- ✅ Each agent analyzes the problem independently
-- ✅ Results may vary slightly between runs due to LLM inference
-- ✅ The swarm adapts to any business problem, not just test cases
-
-### Testing Flexibility
-
-You can test with:
-- Any of the 5 official test cases above
-- Modified versions of test cases
-- Completely new business problems
-- Custom surprise events
-
-The agent swarm will analyze any valid business problem and produce a structured decision following the boardroom protocol.
-
----
-
-## Quick Demo Script (for Judges)
-
-1. Open http://127.0.0.1:5000
-2. Copy-paste TC1 problem statement from above
-3. Click CONVENE BOARDROOM / DEPLOY STRATEGY
-4. Watch agents fire in sequence across the Swarm Analytics view
-5. Navigate to Decide to see the full CEO directive with:
-   - Strategy comparison (A vs B)
-   - Final decision with evidence
-   - Rejected alternatives
-   - Key risks and trade-offs
-   - Implementation steps
-   - 3 measurable KPIs
-6. For surprise round: Copy-paste TC2 problem + surprise event
-7. Watch the swarm adapt and revise the decision in real-time
-
 ---
 
 *Built at Agentic Swarm Hackathon - Team Agent Zero*
