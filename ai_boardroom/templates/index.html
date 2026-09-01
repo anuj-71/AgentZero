@@ -364,19 +364,41 @@ textarea.form-input{resize:none;height:130px;line-height:1.5}
 .connection-line.active{stroke:var(--purple3);opacity:.8;stroke-dasharray:none;animation:flowLine 1s linear infinite}
 @keyframes flowLine{to{stroke-dashoffset:-8}}
 
+/* Bottom Canvas Elements */
+.canvas-stages-bar{
+  position:absolute;bottom:14px;left:14px;
+  display:flex;align-items:center;gap:4px;z-index:100;
+  background:rgba(15,18,34,.88);backdrop-filter:blur(12px);
+  border:1px solid var(--border);border-radius:10px;padding:4px 6px;
+  box-shadow:0 8px 24px rgba(0,0,0,.45);
+}
+.stage-pill{
+  background:transparent;border:1px solid transparent;color:var(--text3);
+  font-size:11px;font-weight:600;padding:5px 10px;border-radius:6px;
+  cursor:pointer;display:flex;align-items:center;gap:5px;transition:all .15s;
+}
+.stage-pill:hover{color:var(--text);background:rgba(255,255,255,.06);border-color:var(--border)}
+.stage-pill.active{color:var(--purple3);background:rgba(124,58,237,.2);border-color:rgba(124,58,237,.35)}
+.stage-pill.pill-surprise{color:var(--red)}
+.stage-pill.pill-surprise:hover{background:rgba(239,68,68,.15);border-color:rgba(239,68,68,.3)}
+
 /* Canvas controls */
 .canvas-controls{
-  position:absolute;bottom:12px;right:12px;
-  display:flex;align-items:center;gap:8px;
+  position:absolute;bottom:14px;right:14px;
+  display:flex;align-items:center;gap:6px;z-index:100;
+  background:rgba(15,18,34,.88);backdrop-filter:blur(12px);
+  border:1px solid var(--border);border-radius:10px;padding:4px 6px;
+  box-shadow:0 8px 24px rgba(0,0,0,.45);
 }
 .canvas-ctrl-btn{
-  width:38px;height:38px;border-radius:8px;
-  background:var(--bg2);border:1px solid var(--border);
+  height:30px;border-radius:6px;
+  background:rgba(255,255,255,.04);border:1px solid var(--border);
   color:var(--text2);display:flex;align-items:center;justify-content:center;
-  font-size:16px;cursor:pointer;transition:all .15s;
+  font-size:11px;font-weight:600;padding:0 10px;gap:5px;cursor:pointer;transition:all .15s;
 }
-.canvas-ctrl-btn:hover{border-color:var(--purple);color:var(--purple3)}
-.canvas-ctrl-btn.active{background:rgba(124,58,237,.15);border-color:var(--purple);color:var(--purple3)}
+.canvas-ctrl-btn:hover{border-color:var(--purple);color:var(--purple3);background:rgba(124,58,237,.1)}
+.canvas-ctrl-btn.active{background:rgba(124,58,237,.25);border-color:rgba(124,58,237,.5);color:var(--purple3)}
+
 
 /* Transcript panel */
 .transcript-panel{
@@ -744,33 +766,33 @@ textarea.form-input{resize:none;height:130px;line-height:1.5}
           <div class="agent-list">
             <div class="agent-item">
               <span class="agent-dot dot-purple"></span>
-              <span class="agent-item-name">CEO Node</span>
-              <span class="agent-item-role">Strategic alignment &amp; final verdict</span>
+              <span class="agent-item-name">CEO Agent</span>
+              <span class="agent-item-role">Strategic alignment, alternative trade-offs &amp; final mandate</span>
             </div>
             <div class="agent-item">
               <span class="agent-dot dot-green"></span>
-              <span class="agent-item-name">Finance Alpha</span>
-              <span class="agent-item-role">Budget feasibility &amp; ROI modeling</span>
+              <span class="agent-item-name">Finance and Treasury Agent</span>
+              <span class="agent-item-role">Cost of funds, ROI, margins, liquidity &amp; break-even modeling</span>
             </div>
             <div class="agent-item">
               <span class="agent-dot dot-amber"></span>
-              <span class="agent-item-name">Marketing Synthesizer</span>
-              <span class="agent-item-role">Brand impact &amp; market positioning</span>
+              <span class="agent-item-name">Marketing and Sales Agent</span>
+              <span class="agent-item-role">Target customer persona, positioning &amp; acquisition strategy</span>
             </div>
             <div class="agent-item">
               <span class="agent-dot dot-blue"></span>
-              <span class="agent-item-name">Research Deep-Dive</span>
-              <span class="agent-item-role">Competitor analysis &amp; trend forecasting</span>
+              <span class="agent-item-name">Business Research Agent</span>
+              <span class="agent-item-role">Market opportunity, competitor analysis &amp; demand forecasting</span>
             </div>
             <div class="agent-item">
-              <span class="agent-dot" style="background:var(--blue)"></span>
-              <span class="agent-item-name">Operations Vector</span>
-              <span class="agent-item-role">Logistical execution &amp; scalability</span>
+              <span class="agent-dot" style="background:#3b82f6"></span>
+              <span class="agent-item-name">Compliance and Customer Protection Agent</span>
+              <span class="agent-item-role">Fair customer treatment, regulatory guidelines &amp; operational capacity</span>
             </div>
             <div class="agent-item">
               <span class="agent-dot dot-red"></span>
-              <span class="agent-item-name">Devil's Advocate</span>
-              <span class="agent-item-role">Risk maximization &amp; counter-arguments</span>
+              <span class="agent-item-name">Credit Risk Agent</span>
+              <span class="agent-item-role">Default loss modeling, FLDG compliance &amp; stress testing</span>
             </div>
           </div>
         </div>
@@ -858,66 +880,7 @@ textarea.form-input{resize:none;height:130px;line-height:1.5}
 
   <!-- Layout under topbar -->
   <div style="display:flex;flex:1;overflow:hidden;">
-    <!-- Left sidebar -->
-    <aside class="sidebar">
-      <div class="sidebar-session">
-        <div class="sidebar-session-icon">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--purple3)" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-        </div>
-        <div class="sidebar-session-title">Boardroom Session</div>
-        <div class="sidebar-session-sub">Active: <span id="sidebar-session-name">Strategic Q4 Review</span></div>
-        <div class="sidebar-session-badge">
-          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-          Session active
-        </div>
-      </div>
-      <div class="sidebar-engine">
-        <div class="sidebar-engine-label">INTELLIGENCE ENGINE</div>
-        <div class="sidebar-engine-name">Swarm Intelligence Engine</div>
-      </div>
-      <nav class="sidebar-nav">
-        <button class="active" id="sb-analyze" onclick="setSidebarStage('analyze')">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
-          Analyze
-        </button>
-        <button id="sb-share" onclick="setSidebarStage('share')">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-          Share
-        </button>
-        <button id="sb-challenge" onclick="setSidebarStage('challenge')">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-          Challenge
-        </button>
-        <button id="sb-compare" onclick="setSidebarStage('compare')">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-          Compare
-        </button>
-        <button id="sb-decide" onclick="setSidebarStage('decide')">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-          Decide
-        </button>
-        <button id="sb-surprise" onclick="setSidebarStage('surprise')" style="margin-top:8px">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-          Surprise
-        </button>
-      </nav>
-      <div class="sidebar-bottom">
-        <button class="new-swarm-btn" onclick="showView('landing')">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          Initialize New Swarm
-        </button>
-        <button>
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-          System Logs
-        </button>
-        <button>
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-          Support
-        </button>
-      </div>
-    </aside>
-
-    <div class="boardroom-content">
+    <div class="boardroom-content" style="flex:1;display:flex;overflow:hidden;">
       <!-- Main boardroom area -->
       <div class="boardroom-main">
         <div class="boardroom-header">
@@ -943,11 +906,41 @@ textarea.form-input{resize:none;height:130px;line-height:1.5}
           <div class="canvas-grid"></div>
           <svg class="connection-svg" id="connection-svg"></svg>
           <div class="canvas-nodes" id="canvas-nodes"></div>
+          
+          <!-- Bottom-Left Stages Navigation Bar -->
+          <div class="canvas-stages-bar">
+            <button class="stage-pill active" id="sb-analyze" onclick="setSidebarStage('analyze')">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              1. Analyze
+            </button>
+            <button class="stage-pill" id="sb-share" onclick="setSidebarStage('share')">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+              2. Share
+            </button>
+            <button class="stage-pill" id="sb-challenge" onclick="setSidebarStage('challenge')">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+              3. Challenge
+            </button>
+            <button class="stage-pill" id="sb-compare" onclick="setSidebarStage('compare')">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+              4. Compare
+            </button>
+            <button class="stage-pill" id="sb-decide" onclick="setSidebarStage('decide')">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+              5. Decide
+            </button>
+            <button class="stage-pill pill-surprise" id="sb-surprise" onclick="setSidebarStage('surprise')">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              Surprise
+            </button>
+          </div>
+
+          <!-- Bottom-Right Audio / Playback Controls -->
           <div class="canvas-controls">
-            <button class="canvas-ctrl-btn" id="btn-voice-toggle" onclick="toggleVoice()" title="Toggle Voice">🔊</button>
-            <button class="canvas-ctrl-btn" id="btn-speed-toggle" onclick="toggleSpeed2x()" title="Toggle 2x Speed">1×</button>
-            <button class="canvas-ctrl-btn active" id="btn-pause-play" onclick="togglePause()" title="Pause/Resume">⏸</button>
-            <button class="canvas-ctrl-btn" id="btn-mic" title="Voice Input">🎤</button>
+            <button class="canvas-ctrl-btn" id="btn-voice-toggle" onclick="toggleVoice()" title="Toggle Voice (ElevenLabs)">🔊 <span id="voice-txt">Voice: OFF</span></button>
+            <button class="canvas-ctrl-btn" id="btn-speed-toggle" onclick="toggleSpeed2x()" title="Toggle 2x Speed">2×</button>
+            <button class="canvas-ctrl-btn active" id="btn-pause-play" onclick="togglePause()" title="Pause/Resume">⏸ Pause</button>
+            <button class="canvas-ctrl-btn" id="btn-skip-speech" onclick="skipSpeech()" title="Skip Speech">⏭ Skip</button>
           </div>
         </div>
       </div>
@@ -995,63 +988,8 @@ textarea.form-input{resize:none;height:130px;line-height:1.5}
   </header>
 
   <div style="display:flex;flex:1;overflow:hidden;">
-    <!-- Left sidebar -->
-    <aside class="sidebar">
-      <div class="sidebar-session">
-        <div class="sidebar-session-icon">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--purple3)" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-        </div>
-        <div class="sidebar-session-title">Boardroom Session</div>
-        <div class="sidebar-session-sub">Active: <span id="dec-session-name">Strategic Q4 Review</span></div>
-      </div>
-      <div class="sidebar-engine">
-        <div class="sidebar-engine-label">INTELLIGENCE ENGINE</div>
-        <div class="sidebar-engine-name">Swarm Intelligence Engine</div>
-      </div>
-      <nav class="sidebar-nav">
-        <button onclick="showView('boardroom');setSidebarStage('analyze')">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
-          Analyze
-        </button>
-        <button onclick="showView('boardroom');setSidebarStage('share')">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-          Share
-        </button>
-        <button onclick="showView('boardroom');setSidebarStage('challenge')">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-          Challenge
-        </button>
-        <button onclick="showView('boardroom');setSidebarStage('compare')">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-          Compare
-        </button>
-        <button class="active">
-          <span class="nav-dot"></span>
-          Decide
-        </button>
-        <button onclick="showView('boardroom');setSidebarStage('surprise')" style="margin-top:8px">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-          Surprise
-        </button>
-      </nav>
-      <div class="sidebar-bottom">
-        <button class="new-swarm-btn" onclick="showView('landing')">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          Initialize New Swarm
-        </button>
-        <button>
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-          System Logs
-        </button>
-        <button>
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-          Support
-        </button>
-      </div>
-    </aside>
-
     <!-- Main decision area -->
-    <div class="decision-main" id="decision-main">
+    <div class="decision-main" id="decision-main" style="flex:1;overflow-y:auto;padding:24px 36px;">
       <div class="decision-header">
         <h1>Decision Synthesis</h1>
         <p>Final autonomous consensus reached across <strong id="dec-agent-count">5</strong> primary agent domains.</p>
@@ -1414,27 +1352,36 @@ const STATE = {
 };
 
 /* ════════════════════════════════════════════
-   AGENT DEFINITIONS
+   AGENT DEFINITIONS & FUNCTIONAL SVG ICONS
 ════════════════════════════════════════════ */
+const AGENT_SVGS = {
+  nexus: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><path d="M11 8v6M8 11h6"/></svg>',
+  aura: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/><polyline points="18 10 21 7 18 4"/><polyline points="6 14 3 17 6 20"/></svg>',
+  echo: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>',
+  cog: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>',
+  vex: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
+  prime: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="3"/><circle cx="12" cy="12" r="3"/><line x1="12" y1="4" x2="12" y2="9"/><line x1="12" y1="15" x2="12" y2="20"/><line x1="4" y1="12" x2="9" y2="12"/><line x1="15" y1="12" x2="20" y2="12"/></svg>'
+};
+
 const AGENTS_DEF = [
-  // Oval boardroom: CEO centre, 5 dept agents evenly spaced around the oval
-  { id:'nexus',    name:'Business Research Agent',                 codename:'Market Intelligence',   dept:'Business Research',                   role:'Market · Customers · Competitors · Risks', icon:'🔭', color:'#06b6d4', abbr:'[RESEARCH]',    pos:{x:50, y:10} },
-  { id:'aura',     name:'Finance and Treasury Agent',              codename:'Financial Modelling',   dept:'Finance & Treasury',                  role:'Costs · Revenue · Profitability · Liquidity', icon:'💰', color:'#10b981', abbr:'[FINANCE]',     pos:{x:83, y:30} },
-  { id:'echo',     name:'Marketing and Sales Agent',               codename:'Go-to-Market',          dept:'Marketing & Sales',                   role:'Target Customers · Positioning · Acquisition', icon:'📣', color:'#f59e0b', abbr:'[MARKETING]',   pos:{x:78, y:72} },
-  { id:'cog',      name:'Compliance and Customer Protection Agent',codename:'Compliance & Ops',      dept:'Compliance & Customer Protection',    role:'Fair Treatment · Compliance · Capacity', icon:'⚙️', color:'#3b82f6', abbr:'[COMPLIANCE]',   pos:{x:22, y:72} },
-  { id:'vex',      name:'Credit Risk Agent',                       codename:'Credit & Risk Review',  dept:'Credit Risk',                         role:'Credit Risk · Default Loss · Challenges', icon:'🗡️', color:'#ef4444', abbr:'[CREDIT-RISK]', pos:{x:17, y:30} },
-  { id:'prime',    name:'CEO Agent',                               codename:'Chief Executive AI',    dept:'CEO — Final Decision',                role:'Synthesises · Resolves · Decides', icon:'🏛️', color:'#8b5cf6', abbr:'[CEO]',         pos:{x:50, y:44}, isDirector:true },
+  { id:'nexus',    name:'Business Research Agent',                 codename:'Market Intelligence',   dept:'Business Research',                   role:'Market · Customers · Competitors · Risks', icon:AGENT_SVGS.nexus, color:'#06b6d4', abbr:'[RESEARCH]',    pos:{x:50, y:10} },
+  { id:'aura',     name:'Finance and Treasury Agent',              codename:'Financial Modelling',   dept:'Finance & Treasury',                  role:'Costs · Revenue · Profitability · Liquidity', icon:AGENT_SVGS.aura, color:'#10b981', abbr:'[FINANCE]',     pos:{x:83, y:30} },
+  { id:'echo',     name:'Marketing and Sales Agent',               codename:'Go-to-Market',          dept:'Marketing & Sales',                   role:'Target Customers · Positioning · Acquisition', icon:AGENT_SVGS.echo, color:'#f59e0b', abbr:'[MARKETING]',   pos:{x:78, y:72} },
+  { id:'cog',      name:'Compliance and Customer Protection Agent',codename:'Compliance & Ops',      dept:'Compliance & Customer Protection',    role:'Fair Treatment · Compliance · Capacity', icon:AGENT_SVGS.cog, color:'#3b82f6', abbr:'[COMPLIANCE]',   pos:{x:22, y:72} },
+  { id:'vex',      name:'Credit Risk Agent',                       codename:'Credit & Risk Review',  dept:'Credit Risk',                         role:'Credit Risk · Default Loss · Challenges', icon:AGENT_SVGS.vex, color:'#ef4444', abbr:'[CREDIT-RISK]', pos:{x:17, y:30} },
+  { id:'prime',    name:'CEO Agent',                               codename:'Chief Executive AI',    dept:'CEO — Final Decision',                role:'Synthesises · Resolves · Decides', icon:AGENT_SVGS.prime, color:'#8b5cf6', abbr:'[CEO]',         pos:{x:50, y:44}, isDirector:true },
 ];
 
 /* ════════════════════════════════════════════
-   DEMO SCENARIOS
+   DEMO SCENARIOS (THEME A - FINSWARM)
 ════════════════════════════════════════════ */
 const DEMO = {
-  company:'FreshMart Global',
-  industry:'Retail / Grocery',
-  budget:'£50M expansion budget',
-  statement:'FreshMart, a profitable UK grocery chain with 120 stores, is evaluating international expansion into Germany and Poland. We must decide whether to enter Germany, Poland, both markets, or redeploy the £50M capital domestically against rising competition from Whole Foods entering the UK premium segment.',
+  company:'FinNova Capital',
+  industry:'Digital Lending / FinTech',
+  budget:'INR 30 Crore',
+  statement:'FinNova Capital has INR 30 crore available for a one-year small-business lending pilot and INR 60 lakh for customer acquisition. It can initially approve no more than 700 loans across Retail shops (4L avg, 5% default), Service SMEs (6L avg, 3.5% default), and Small manufacturers (9L avg, 4.5% default). Constraints: portfolio default <= 5%, interest <= 19%, max 70% per segment, >= 3 Cr liquidity reserve.',
 };
+
 
 const DEMO_SCRIPT = [
   { agent:'nexus',  stage:'analyze',   delay:800,  text:'Initiating market intelligence sweep. Germany grocery market valued at €240B with 2.3% CAGR. Discount segment dominated by Lidl/Aldi at 62% combined share. Premium fresh segment underserved — 18% market gap identified. Poland shows 4.1% CAGR, lower competition density, higher receptivity to loyalty programmes.' },
@@ -1577,12 +1524,17 @@ function launchBoardroom() {
   const meta = STATE.problem.industry
     ? `Industry: ${STATE.problem.industry}${STATE.problem.budget ? ' | Budget: ' + STATE.problem.budget : ''}`
     : (STATE.problem.budget ? 'Budget: ' + STATE.problem.budget : 'Strategic Analysis Session');
-  document.getElementById('live-problem-title').textContent = title;
-  document.getElementById('live-problem-meta').textContent  = meta;
-  document.getElementById('sidebar-session-name').textContent = STATE.sessionName;
-  document.getElementById('dec-session-name').textContent = STATE.sessionName;
-  if (STATE.problem.budget) {
-    document.getElementById('live-budget-badge').textContent = 'Budget: ' + STATE.problem.budget;
+  const titleEl = document.getElementById('live-problem-title');
+  if (titleEl) titleEl.textContent = title;
+  const metaEl = document.getElementById('live-problem-meta');
+  if (metaEl) metaEl.textContent = meta;
+  const ssnEl = document.getElementById('sidebar-session-name');
+  if (ssnEl) ssnEl.textContent = STATE.sessionName;
+  const dsnEl = document.getElementById('dec-session-name');
+  if (dsnEl) dsnEl.textContent = STATE.sessionName;
+  const budEl = document.getElementById('live-budget-badge');
+  if (budEl && STATE.problem.budget) {
+    budEl.textContent = 'Budget: ' + STATE.problem.budget;
   }
   STATE.transcriptLines = [];
   STATE.traceEntries    = [];
@@ -1628,10 +1580,10 @@ function renderCanvas() {
     node.style.left = a.px + 'px';
     node.style.top  = a.py + 'px';
     node.innerHTML = `
-      <div class="node-box" style="border-color:${a.color}22">
-        <span style="font-size:24px">${a.icon}</span>
+      <div class="node-box" style="border-color:${a.color}44;display:flex;align-items:center;justify-content:center;">
+        ${a.icon}
       </div>
-      <div class="node-label" style="color:${a.color}">${a.name.toUpperCase()}${a.isDirector ? '<br><span style="color:var(--text3)">(DIRECTOR)</span>' : ''}</div>`;
+      <div class="node-label" style="color:${a.color}">${a.name.toUpperCase()}${a.isDirector ? '<br><span style="color:var(--text3);font-size:9px">(DIRECTOR)</span>' : ''}</div>`;
     node.addEventListener('click', () => showAgentPopup(a));
     nodesEl.appendChild(node);
   });
@@ -1895,16 +1847,33 @@ function addTraceEntry(agentId, text) {
 
 /* ════════════════════════════════════════════
    CONTROLS
+/* ════════════════════════════════════════════
+   CANVAS & PLAYBACK CONTROLS
 ════════════════════════════════════════════ */
+function setSidebarStage(stage) {
+  if (stage === 'surprise') {
+    triggerSurprise();
+    return;
+  }
+  updateStageUI(stage);
+}
+
+function skipSpeech() {
+  skipCurrentSpeech();
+}
+
 function toggleVoice() {
   STATE.voiceEnabled = !STATE.voiceEnabled;
   const btn = document.getElementById('btn-voice-toggle');
+  const txt = document.getElementById('voice-txt');
   if (btn) {
-    btn.textContent = STATE.voiceEnabled ? '🔊' : '🔇';
     btn.classList.toggle('active', STATE.voiceEnabled);
   }
+  if (txt) {
+    txt.textContent = STATE.voiceEnabled ? 'Voice: ON' : 'Voice: OFF';
+  }
   if (!STATE.voiceEnabled && 'speechSynthesis' in window) window.speechSynthesis.cancel();
-  showToast(STATE.voiceEnabled ? 'Voice enabled' : 'Voice muted', 'info');
+  showToast(STATE.voiceEnabled ? 'ElevenLabs Voice enabled' : 'Voice muted', 'info');
 }
 
 function toggleSpeed2x() {
@@ -1920,7 +1889,10 @@ function toggleSpeed2x() {
 function togglePause() {
   STATE.paused = !STATE.paused;
   const btn = document.getElementById('btn-pause-play');
-  if (btn) btn.textContent = STATE.paused ? '▶' : '⏸';
+  if (btn) {
+    btn.textContent = STATE.paused ? '▶ Resume' : '⏸ Pause';
+    btn.classList.toggle('active', !STATE.paused);
+  }
   if (!STATE.paused) startSimulation();
   showToast(STATE.paused ? 'Session paused' : 'Session resumed', 'info');
 }
@@ -2323,54 +2295,8 @@ window.addEventListener('DOMContentLoaded', () => {
     window.speechSynthesis.addEventListener('voiceschanged', () => {});
   }
 
-  injectTestBar();
   showView('landing');
 });
-
-/* ────────────────────────────────────────────
-   TEST TOOLBAR  (floating shortcuts bar)
-──────────────────────────────────────────── */
-function injectTestBar() {
-  const bar = document.createElement('div');
-  bar.id = 'test-bar';
-  bar.style.cssText = [
-    'position:fixed','bottom:14px','left:50%','transform:translateX(-50%)',
-    'background:#13141f','border:1px solid #333560','border-radius:12px',
-    'padding:7px 12px','display:flex','align-items:center','gap:7px',
-    'z-index:99999','box-shadow:0 8px 32px rgba(0,0,0,.65)',
-    "font-family:'Inter',sans-serif"
-  ].join(';');
-
-  const tb = (label, color, fn) => {
-    const b = document.createElement('button');
-    b.textContent = label;
-    b.style.cssText = `background:rgba(255,255,255,.05);border:1px solid ${color}44;color:${color};font-size:11px;font-weight:600;padding:5px 11px;border-radius:7px;cursor:pointer;letter-spacing:.03em`;
-    b.onmouseover = () => b.style.background = `${color}18`;
-    b.onmouseout  = () => b.style.background = 'rgba(255,255,255,.05)';
-    b.onclick = fn;
-    return b;
-  };
-
-  const label = document.createElement('span');
-  label.textContent = 'TEST';
-  label.style.cssText = 'font-size:10px;font-weight:700;letter-spacing:.1em;color:#64748b;margin-right:4px';
-
-  const closeBtn = document.createElement('button');
-  closeBtn.textContent = '✕';
-  closeBtn.style.cssText = 'background:none;border:none;color:#64748b;font-size:14px;cursor:pointer;padding:2px 6px;margin-left:4px';
-  closeBtn.onclick = () => bar.remove();
-
-  bar.appendChild(label);
-  bar.appendChild(tb('① Landing',    '#6366f1', () => showView('landing')));
-  bar.appendChild(tb('② Assembly',   '#06b6d4', quickAssembly));
-  bar.appendChild(tb('③ Boardroom',  '#f59e0b', quickBoardroom));
-  bar.appendChild(tb('④ Decision',   '#8b5cf6', quickDecision));
-  bar.appendChild(tb('⑤ Surprise',   '#ef4444', quickSurprise));
-  bar.appendChild(tb('⑥ Analytics',  '#3b82f6', () => showView('analytics')));
-  bar.appendChild(tb('⑦ Risk Audit', '#10b981', () => showView('risk')));
-  bar.appendChild(closeBtn);
-  document.body.appendChild(bar);
-}
 
 /* quick-nav helpers */
 function quickAssembly() {
@@ -2388,7 +2314,8 @@ function quickDecision() {
   STATE.traceEntries    = HARDCODED_TRACE;
   buildDecisionView();
   showView('decision');
-  document.getElementById('dec-session-name').textContent = STATE.sessionName;
+  const dsnEl = document.getElementById('dec-session-name');
+  if (dsnEl) dsnEl.textContent = STATE.sessionName;
 }
 
 function quickSurprise() {
