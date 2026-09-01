@@ -4,6 +4,7 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>Agentic Swarm – AI Boardroom</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
 /* ══════════════════════════════════════════════
    RESET & TOKENS
@@ -867,14 +868,12 @@ textarea.form-input{resize:none;height:130px;line-height:1.5}
       <button class="active" onclick="showNavTab(this,'landing')">Executive Overview</button>
       <button onclick="showNavTab(this,'analytics')">Swarm Analytics</button>
       <button onclick="showNavTab(this,'risk')">Risk Audit</button>
-      <button id="decide-nav-btn" onclick="showView('decision')" style="display:none">Decide</button>
     </nav>
     <div class="topbar-right">
-      <div class="budget-badge" id="live-budget-badge">Budget: $500K</div>
-      <button class="icon-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></button>
-      <button class="icon-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg></button>
-      <button class="btn-deploy" onclick="showView('decision')">DEPLOY STRATEGY</button>
-      <button class="btn-emergency">EMERGENCY STOP</button>
+      <div class="budget-badge" id="live-budget-badge">Budget: INR 30 Cr</div>
+      <button class="icon-btn" title="Notifications"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></button>
+      <button class="icon-btn" title="Swarm Network"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg></button>
+      <button class="btn-deploy" onclick="showView('decision')">VIEW SYNTHESIS</button>
     </div>
   </header>
 
@@ -977,13 +976,11 @@ textarea.form-input{resize:none;height:130px;line-height:1.5}
       <button onclick="showNavTab(this,'landing')">Executive Overview</button>
       <button onclick="showNavTab(this,'analytics')">Swarm Analytics</button>
       <button onclick="showNavTab(this,'risk')">Risk Audit</button>
-      <button class="active">Decide</button>
     </nav>
     <div class="topbar-right">
-      <button class="icon-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></button>
-      <button class="icon-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg></button>
-      <button class="btn-emergency">Emergency Stop</button>
-      <button class="btn-deploy">Deploy Strategy</button>
+      <button class="icon-btn" title="Notifications"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></button>
+      <button class="icon-btn" title="Swarm Engine"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg></button>
+      <button class="btn-deploy" onclick="downloadReport()">Download PDF Report</button>
     </div>
   </header>
 
@@ -2016,206 +2013,283 @@ function buildSurpriseDecision(surpriseText) {
 /* ════════════════════════════════════════════
    REPORT DOWNLOAD
 ════════════════════════════════════════════ */
-function downloadReport() {
+/* ════════════════════════════════════════════
+   COMPREHENSIVE MULTI-TESTCASE PDF REPORT
+════════════════════════════════════════════ */
+async function downloadReport() {
+  showToast('Generating comprehensive multi-testcase PDF report...', 'info');
+  
+  let testcases = [];
+  try {
+    const res = await fetch('/api/testcases-report');
+    if (res.ok) {
+      testcases = await res.json();
+    }
+  } catch (err) {
+    console.warn('Could not fetch testcases report dynamically, using local buffer', err);
+  }
+  
+  if (!window.jspdf || !window.jspdf.jsPDF) {
+    showToast('PDF library initializing, please retry in 2 seconds...', 'info');
+    return;
+  }
+  
   const { jsPDF } = window.jspdf;
-  const pdf = new jsPDF();
+  const pdf = new jsPDF({
+    orientation: 'portrait',
+    unit: 'mm',
+    format: 'a4'
+  });
   
-  let y = 20;
-  const lineHeight = 7;
-  const pageHeight = 280;
+  const pageWidth = 210;
+  const pageHeight = 297;
+  const margin = 14;
+  const contentWidth = pageWidth - (margin * 2);
+  let y = 14;
   
-  // Helper to add text with page break handling
-  const addText = (text, fontSize = 10, style = 'normal', color = [0, 0, 0]) => {
-    if (y > pageHeight) {
+  const checkPage = (requiredSpace = 12) => {
+    if (y + requiredSpace > pageHeight - 16) {
       pdf.addPage();
-      y = 20;
+      y = 16;
+      return true;
     }
-    pdf.setFontSize(fontSize);
-    pdf.setFont('helvetica', style);
-    pdf.setTextColor(...color);
-    pdf.text(text, 15, y);
-    y += lineHeight * (fontSize / 10);
+    return false;
   };
   
-  const addLine = () => {
-    if (y > pageHeight - 10) {
-      pdf.addPage();
-      y = 20;
-    }
-    pdf.setDrawColor(200, 200, 200);
-    pdf.line(15, y, 195, y);
-    y += 5;
+  const addDivider = (color = [218, 222, 233]) => {
+    checkPage(6);
+    pdf.setDrawColor(...color);
+    pdf.setLineWidth(0.3);
+    pdf.line(margin, y, pageWidth - margin, y);
+    y += 4;
   };
   
-  // Title
-  pdf.setFillColor(124, 58, 237);
-  pdf.rect(0, 0, 210, 35, 'F');
+  // ─── COVER / HEADER BANNER ────────────────────────
+  pdf.setFillColor(30, 27, 75); // Dark Purple Banner
+  pdf.rect(0, 0, pageWidth, 32, 'F');
+  
   pdf.setTextColor(255, 255, 255);
-  pdf.setFontSize(20);
   pdf.setFont('helvetica', 'bold');
-  pdf.text('AGENTIC SWARM', 15, 15);
-  pdf.setFontSize(14);
-  pdf.text('Boardroom Decision Report', 15, 25);
+  pdf.setFontSize(16);
+  pdf.text('FINNOVA CAPITAL — THEME A: FINSWARM', margin, 12);
   
-  y = 45;
-  
-  // Session Info
-  pdf.setTextColor(0, 0, 0);
-  pdf.setFontSize(12);
-  pdf.setFont('helvetica', 'bold');
-  pdf.text('SESSION OVERVIEW', 15, y);
-  y += 10;
-  
-  pdf.setFontSize(10);
   pdf.setFont('helvetica', 'normal');
-  pdf.text('Session: ' + STATE.sessionName, 15, y);
-  y += 7;
-  pdf.text('Company: ' + STATE.problem.company, 15, y);
-  y += 7;
-  pdf.text('Industry: ' + STATE.problem.industry, 15, y);
-  y += 7;
-  pdf.text('Budget: ' + STATE.problem.budget, 15, y);
-  y += 10;
+  pdf.setFontSize(9);
+  pdf.setTextColor(196, 181, 253);
+  pdf.text('Autonomous Multi-Agent Boardroom Decision & Verification Audit Report', margin, 18);
+  pdf.text('Team: Agent Zero (Anuj Agarwal, Palak Malhotra, Pranjal Rai) | Engine: Gemini 3.1 Flash-Lite + ElevenLabs', margin, 24);
   
-  addLine();
+  y = 38;
   
-  // CEO Decision
-  pdf.setFontSize(12);
+  // ─── EXECUTIVE SUMMARY ───────────────────────────
+  pdf.setFillColor(243, 244, 246);
+  pdf.rect(margin, y, contentWidth, 20, 'F');
+  pdf.setDrawColor(209, 213, 219);
+  pdf.rect(margin, y, contentWidth, 20, 'S');
+  
   pdf.setFont('helvetica', 'bold');
-  pdf.setTextColor(124, 58, 237);
-  pdf.text('CEO FINAL DECISION', 15, y);
-  y += 10;
+  pdf.setFontSize(9);
+  pdf.setTextColor(17, 24, 39);
+  pdf.text('MANDATORY BOARDROOM AGENTS ROSTER (6 AGENTS):', margin + 3, y + 6);
   
-  const decision = document.getElementById('ceo-decision-text')?.textContent || 'Decision pending';
-  pdf.setFontSize(11);
-  pdf.setFont('helvetica', 'bold');
-  pdf.setTextColor(0, 0, 0);
-  const decisionLines = pdf.splitTextToSize(decision, 180);
-  decisionLines.forEach(line => {
-    if (y > pageHeight) {
-      pdf.addPage();
-      y = 20;
-    }
-    pdf.text(line, 15, y);
-    y += 7;
-  });
-  y += 5;
-  
-  addLine();
-  
-  // KPIs
-  pdf.setFontSize(12);
-  pdf.setFont('helvetica', 'bold');
-  pdf.setTextColor(124, 58, 237);
-  pdf.text('KEY PERFORMANCE INDICATORS', 15, y);
-  y += 10;
-  
-  pdf.setFontSize(10);
   pdf.setFont('helvetica', 'normal');
-  pdf.setTextColor(0, 0, 0);
+  pdf.setFontSize(8);
+  pdf.setTextColor(55, 65, 81);
+  pdf.text('1. Business Research Agent  |  2. Finance and Treasury Agent  |  3. Marketing and Sales Agent', margin + 3, y + 11);
+  pdf.text('4. Credit Risk Agent (Loss Model & Stress Test)  |  5. Compliance & Customer Protection Agent (RBI Rules)  |  6. CEO Agent', margin + 3, y + 16);
   
-  const kpis = [
-    { label: 'Revenue Target', value: document.getElementById('kpi-revenue')?.textContent || 'N/A' },
-    { label: 'Revenue Change', value: document.getElementById('kpi-revenue-change')?.textContent || 'N/A' },
-    { label: 'Est. CAC', value: document.getElementById('kpi-cac')?.textContent || 'N/A' },
-    { label: 'Conversion Rate', value: document.getElementById('kpi-conversion')?.textContent || 'N/A' }
-  ];
+  y += 26;
   
-  kpis.forEach(kpi => {
-    if (y > pageHeight) {
-      pdf.addPage();
-      y = 20;
-    }
+  // ─── ITERATE OVER ALL TEST CASES ─────────────────
+  testcases.forEach((tc, tcIdx) => {
+    checkPage(24);
+    
+    // Test Case Title Header Box
+    pdf.setFillColor(238, 242, 255);
+    pdf.rect(margin, y, contentWidth, 9, 'F');
+    pdf.setDrawColor(99, 102, 241);
+    pdf.setLineWidth(0.4);
+    pdf.rect(margin, y, contentWidth, 9, 'S');
+    
     pdf.setFont('helvetica', 'bold');
-    pdf.text(kpi.label + ':', 15, y);
+    pdf.setFontSize(10);
+    pdf.setTextColor(67, 56, 202);
+    pdf.text(`[TEST CASE ${tcIdx + 1}] ${tc.title || tc.id}`, margin + 3, y + 6);
+    y += 13;
+    
+    // Problem Statement Box
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(8);
+    pdf.setTextColor(31, 41, 55);
+    pdf.text('Problem Context & Parameters:', margin, y);
+    y += 4;
+    
     pdf.setFont('helvetica', 'normal');
-    pdf.text(kpi.value, 70, y);
-    y += 7;
-  });
-  y += 5;
-  
-  addLine();
-  
-  // Evidence
-  pdf.setFontSize(12);
-  pdf.setFont('helvetica', 'bold');
-  pdf.setTextColor(124, 58, 237);
-  pdf.text('SUPPORTING EVIDENCE', 15, y);
-  y += 10;
-  
-  const evidence = [
-    { source: 'Business Research', text: document.getElementById('dec-research-evidence')?.textContent || '' },
-    { source: 'Finance', text: document.getElementById('dec-finance-evidence')?.textContent || '' }
-  ];
-  
-  evidence.forEach(ev => {
-    if (ev.text) {
-      pdf.setFontSize(10);
+    pdf.setFontSize(7.5);
+    pdf.setTextColor(75, 85, 99);
+    const probLines = pdf.splitTextToSize(tc.problem || '', contentWidth);
+    probLines.forEach(line => {
+      checkPage(4);
+      pdf.text(line, margin, y);
+      y += 3.6;
+    });
+    y += 2;
+    
+    if (tc.surprise) {
+      checkPage(8);
       pdf.setFont('helvetica', 'bold');
-      pdf.setTextColor(0, 0, 0);
-      pdf.text(ev.source + ':', 15, y);
-      y += 6;
+      pdf.setFontSize(7.5);
+      pdf.setTextColor(185, 28, 28);
+      pdf.text('Injected Shock / Surprise Condition:', margin, y);
+      y += 3.5;
+      pdf.setFont('helvetica', 'italic');
+      pdf.setTextColor(153, 27, 27);
+      const surpLines = pdf.splitTextToSize(tc.surprise, contentWidth);
+      surpLines.forEach(line => {
+        checkPage(4);
+        pdf.text(line, margin, y);
+        y += 3.4;
+      });
+      y += 2;
+    }
+    
+    addDivider([199, 210, 254]);
+    
+    // Agent Sections Helper
+    const printAgentSection = (agentName, agentRole, textContent, headerColor) => {
+      if (!textContent) return;
+      checkPage(14);
+      
+      pdf.setFont('helvetica', 'bold');
+      pdf.setFontSize(8.5);
+      pdf.setTextColor(...headerColor);
+      pdf.text(`${agentName} (${agentRole}):`, margin, y);
+      y += 4;
       
       pdf.setFont('helvetica', 'normal');
-      pdf.setTextColor(60, 60, 60);
-      const evLines = pdf.splitTextToSize(ev.text, 180);
-      evLines.forEach(line => {
-        if (y > pageHeight) {
-          pdf.addPage();
-          y = 20;
-        }
-        pdf.text(line, 15, y);
-        y += 6;
+      pdf.setFontSize(7.5);
+      pdf.setTextColor(31, 41, 55);
+      
+      const cleanText = textContent.replace(/\*\*/g, '').replace(/#{1,6}\s*/g, '');
+      const lines = pdf.splitTextToSize(cleanText, contentWidth);
+      lines.forEach(line => {
+        checkPage(4);
+        pdf.text(line, margin, y);
+        y += 3.5;
       });
-      y += 5;
+      y += 2;
+    };
+    
+    // Print each agent's evaluation
+    printAgentSection('1. Business Research Agent', 'Market Demand & Competitor Analysis', tc.research, [8, 145, 178]);
+    printAgentSection('2. Finance and Treasury Agent', 'Cost of Funds, Margins & Liquidity', tc.finance, [5, 150, 105]);
+    printAgentSection('3. Marketing and Sales Agent', 'Target Persona, CAC & Channel Mix', tc.marketing, [217, 119, 6]);
+    printAgentSection('4. Credit Risk Agent', 'Default Loss Modeling & Stress Test', tc.credit_risk, [220, 38, 38]);
+    printAgentSection('5. Compliance & Customer Protection Agent', 'RBI Lending Rules & 19% Interest Limit', tc.compliance, [37, 99, 235]);
+    printAgentSection('Inter-Department Conflict Review', 'Cross-Disciplinary Reconciliation', tc.challenge, [147, 51, 234]);
+    
+    // CEO Synthesis & Directives
+    if (tc.ceo_decision) {
+      checkPage(16);
+      pdf.setFillColor(245, 243, 255);
+      pdf.rect(margin, y, contentWidth, 6, 'F');
+      pdf.setFont('helvetica', 'bold');
+      pdf.setFontSize(8.5);
+      pdf.setTextColor(109, 40, 217);
+      pdf.text('6. CEO Agent — Executive Directive & Strategy Comparison:', margin + 2, y + 4.5);
+      y += 8;
+      
+      pdf.setFont('helvetica', 'normal');
+      pdf.setFontSize(7.5);
+      pdf.setTextColor(17, 24, 39);
+      const ceoLines = pdf.splitTextToSize(tc.ceo_decision.replace(/\*\*/g, ''), contentWidth);
+      ceoLines.forEach(line => {
+        checkPage(4);
+        pdf.text(line, margin, y);
+        y += 3.5;
+      });
+      y += 2;
     }
+    
+    // KPIs
+    if (tc.kpis && tc.kpis.length > 0) {
+      checkPage(10);
+      pdf.setFont('helvetica', 'bold');
+      pdf.setFontSize(8);
+      pdf.setTextColor(109, 40, 217);
+      pdf.text('Target Business KPIs:', margin, y);
+      y += 4;
+      pdf.setFont('helvetica', 'normal');
+      pdf.setFontSize(7.5);
+      pdf.setTextColor(55, 65, 81);
+      tc.kpis.forEach((kpi, ki) => {
+        checkPage(4);
+        pdf.text(`• KPI ${ki + 1}: ${kpi}`, margin + 3, y);
+        y += 3.5;
+      });
+      y += 2;
+    }
+    
+    // Revised Decision (Surprise)
+    if (tc.revised_decision) {
+      checkPage(14);
+      pdf.setFillColor(254, 242, 242);
+      pdf.rect(margin, y, contentWidth, 6, 'F');
+      pdf.setFont('helvetica', 'bold');
+      pdf.setFontSize(8.5);
+      pdf.setTextColor(185, 28, 28);
+      pdf.text('Adaptive CEO Revised Strategy (Post-Surprise):', margin + 2, y + 4.5);
+      y += 8;
+      
+      pdf.setFont('helvetica', 'normal');
+      pdf.setFontSize(7.5);
+      pdf.setTextColor(31, 41, 55);
+      const revLines = pdf.splitTextToSize(tc.revised_decision.replace(/\*\*/g, ''), contentWidth);
+      revLines.forEach(line => {
+        checkPage(4);
+        pdf.text(line, margin, y);
+        y += 3.5;
+      });
+      y += 2;
+    }
+    
+    // Trace
+    if (tc.trace && tc.trace.length > 0) {
+      checkPage(10);
+      pdf.setFont('helvetica', 'bold');
+      pdf.setFontSize(7.5);
+      pdf.setTextColor(107, 114, 128);
+      pdf.text('Swarm Execution Trace:', margin, y);
+      y += 3.5;
+      pdf.setFont('courier', 'normal');
+      pdf.setFontSize(6.5);
+      pdf.setTextColor(107, 114, 128);
+      tc.trace.forEach(t => {
+        checkPage(3.5);
+        pdf.text(`> ${t}`, margin + 2, y);
+        y += 3;
+      });
+      y += 4;
+    }
+    
+    addDivider([156, 163, 175]);
+    y += 4;
   });
   
-  addLine();
-  
-  // Transcript
-  pdf.setFontSize(12);
-  pdf.setFont('helvetica', 'bold');
-  pdf.setTextColor(124, 58, 237);
-  pdf.text('AGENT SWARM TRANSCRIPT', 15, y);
-  y += 10;
-  
-  pdf.setFontSize(8);
-  pdf.setFont('helvetica', 'normal');
-  pdf.setTextColor(0, 0, 0);
-  
-  STATE.transcriptLines.forEach(l => {
-    if (y > pageHeight) {
-      pdf.addPage();
-      y = 20;
-    }
-    const timeStr = l.time || '';
-    const agentStr = (l.abbr || '').replace('[', '').replace(']', '').padEnd(14);
-    const fullLine = timeStr + '  ' + agentStr + ' ' + l.text;
-    const lines = pdf.splitTextToSize(fullLine, 180);
-    lines.forEach(line => {
-      if (y > pageHeight) {
-        pdf.addPage();
-        y = 20;
-      }
-      pdf.text(line, 15, y);
-      y += 5;
-    });
-  });
-  
-  // Footer
+  // ─── FOOTER NUMBERING ACROSS ALL PAGES ─────────────
   const pageCount = pdf.internal.getNumberOfPages();
   for (let i = 1; i <= pageCount; i++) {
     pdf.setPage(i);
-    pdf.setFontSize(8);
-    pdf.setTextColor(150, 150, 150);
-    pdf.text('Agentic Swarm — Boardroom Decision Report', 15, 290);
-    pdf.text('Page ' + i + ' of ' + pageCount, 180, 290);
+    pdf.setFont('helvetica', 'normal');
+    pdf.setFontSize(7.5);
+    pdf.setTextColor(156, 163, 175);
+    pdf.line(margin, pageHeight - 10, pageWidth - margin, pageHeight - 10);
+    pdf.text('FinNova Capital — Agentic Swarm Boardroom Audit Report (Theme A)', margin, pageHeight - 6);
+    pdf.text(`Page ${i} of ${pageCount}`, pageWidth - margin - 18, pageHeight - 6);
   }
   
-  // Save
-  pdf.save('AgenticSwarm_BoardroomReport.pdf');
-  showToast('PDF report downloaded', 'success');
+  pdf.save('FinNova_Capital_ThemeA_Comprehensive_Boardroom_Report.pdf');
+  showToast('Comprehensive 5-Testcase PDF Report downloaded successfully!', 'success');
 }
 
 /* ════════════════════════════════════════════

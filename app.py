@@ -115,6 +115,19 @@ def run():
         return jsonify({"error": str(e)}), 500
 
 
+@app.route("/api/testcases-report", methods=["GET"])
+def testcases_report():
+    import json
+    report_path = os.path.join("data", "testcases_report.json")
+    if os.path.exists(report_path):
+        with open(report_path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        return jsonify(data)
+    return jsonify({"error": "Report not found"}), 404
+
+
 if __name__ == "__main__":
     app.run(debug=True, port=5000)
+
+
 
