@@ -1,197 +1,159 @@
-# Agent Zero // The AI Boardroom Decision Swarm
-
-**Official Submission for the Agentic Swarm Challenge**
-
----
-
-## 1. Team Information
-
-* **Team Name:** Agent Zero
-* **Team Members:**
-  * Anuj Agarwal
-  * Palak Malhotra
-  * Pranjal Rai
+# Agentic Swarm - AI Boardroom
+### Team: Agent Zero
+**Members:** Anuj Agarwal · Palak Malhotra · Pranjal Rai
 
 ---
 
-## 2. Challenge Selection & Solution Summary
+## Challenge Selected
+Build a multi-agent AI system that simulates a business boardroom. Given any business problem, a swarm of specialized AI agents analyses, debates, challenges assumptions, and reaches a structured CEO decision - then adapts when surprise events are injected.
 
-### Selected Challenge
-**The Autonomous Enterprise Boardroom: Cross-Departmental Strategy & Scenario Adaptation**  
-*(Demonstrated on Multi-Market Business Expansions, SaaS Enterprise Pivots, and Quick-Commerce Scale-Ups)*
-
-### One-Paragraph Solution Summary
-Agent Zero is a multi-agent decision intelligence system powered by LangGraph, Google Gemini, and Flask that mirrors an executive boardroom to solve complex, unstructured business problems. The swarm orchestrates six specialized department agents (Research, Finance, Marketing, Operations, Challenge Reviewer, and Devil's Advocate) through a structured 5-stage protocol: independent analysis, explicit cross-department information sharing, dialectic conflict challenge, strategy comparison, and executive synthesis by a CEO agent with actionable KPIs and assigned department ownership. When unforeseen market disruptions occur, an integrated adaptive surprise engine recalculates constraints, identifies changed assumptions, and issues a revised strategic directive with updated KPIs without requiring a system rebuild.
+## Solution Summary
+Agentic Swarm is a LangGraph-powered multi-agent decision engine with a web interface. Six specialized agents run in a structured boardroom protocol - Analyse, Share, Challenge, Compare, Decide - and produce a CEO directive with evidence, rejected alternatives, risks, implementation steps, and measurable KPIs. A Surprise Round forces the swarm to re-evaluate the decision against unexpected market events in real time.
 
 ---
 
-## 3. System Architecture & Workflow
+## Agent List
 
-The decision workflow is implemented as a deterministic Directed Acyclic Graph (DAG) using LangGraph StateGraph, guaranteeing termination without infinite debate loops while supporting parallel fan-out and serialized critical reviews.
-
-```mermaid
-flowchart TD
-    Start([START]) --> Research[1. Business Research Agent]
-    Research --> Share1[Stage 2: Share Findings]
-    Share1 --> Finance[2. Finance Agent]
-    Share1 --> Marketing[3. Marketing Agent]
-    Finance --> Challenge[4. Challenge Node / Conflict Reviewer]
-    Marketing --> Challenge
-    Challenge --> Operations[5. Operations & Risk Agent]
-    Operations --> DevilsAdvocate[6. Devil's Advocate]
-    DevilsAdvocate --> CEO[7. CEO Synthesis Agent]
-    CEO --> Check{Surprise Event Injected?}
-    Check -- No --> EndNode([END])
-    Check -- Yes --> Surprise[8. Adaptive Surprise Agent]
-    Surprise --> EndNode
-```
+| Agent | Role | Input | Output |
+|-------|------|-------|--------|
+| Research Agent (NEXUS) | Market analysis - opportunity, competitors, risks, target customers | Business problem statement | 4-point research brief forwarded to Finance, Marketing, Operations |
+| Finance Agent | Cost, revenue, break-even, financial risks | Business problem + Research output | RECOMMEND or DO NOT RECOMMEND with key financial reason |
+| Marketing Agent (ECHO) | Target segment, positioning, acquisition channels, marketing risk | Business problem + Research output | GO or NO-GO with channel strategy |
+| Challenge Agent (VEX) | Identifies conflict between Finance and Marketing | Finance output + Marketing output | Named conflict between agents + CEO resolution proposal |
+| Operations Agent (AURA) | Feasibility, execution risks, regulatory, resource requirements | Business problem + all dept outputs | FEASIBLE or NOT FEASIBLE + biggest operational risk |
+| Devil's Advocate (COG) | Challenges the most dangerous assumption across all agents | All department outputs | ASSUMPTION CHALLENGED + WHY IT COULD BE WRONG + WHAT CEO MUST VERIFY |
+| CEO Agent (PRIME) | Synthesizes all agent inputs into final executive directive | All 6 agent outputs | DECISION + EVIDENCE USED + REJECTED ALTERNATIVE + KEY RISKS + IMPLEMENTATION + 3 KPIs |
+| Surprise Agent | Re-evaluates CEO decision against a new market event | CEO decision + surprise event | WHAT CHANGED + WHAT STAYS THE SAME + REVISED DECISION + UPDATED KPIs |
 
 ---
 
-## 4. Agent Roster (Roles, Inputs & Outputs)
+## Installation
 
-Every agent operates with dedicated system instructions, separate LLM instances, explicit inputs, and visible outputs in the execution trace.
+**Requirements:** Python 3.10+, pip, Google Gemini API key
 
-| Agent | Codename & Role | Core Responsibility | Input Received | Visible Output |
-| :--- | :--- | :--- | :--- | :--- |
-| **Business Research** | `Nexus` (Lead Researcher) | Analyzes market size, CAGR, customer demographics, competitor benchmarks, and strategic entry barriers. | Raw Business Problem Statement | 4 structured findings forwarded to Finance, Marketing, and Operations. |
-| **Finance** | `Aura` (Chief Financial Officer) | Evaluates unit economics, capex/opex requirements, cash runway, break-even timelines, and financial risks. | Problem Statement + Research Output | Clear RECOMMEND / DO NOT RECOMMEND verdict with break-even model & key financial rationale. |
-| **Marketing & Sales** | `Echo` (Chief Marketing Officer) | Formulates positioning, target personas, top 2 acquisition channels, CAC projections, and go-to-market strategy. | Problem Statement + Research Output | Clear GO / NO-GO recommendation with positioning and acquisition strategy. |
-| **Challenge Reviewer** | `Conflict Node` (Dialectic Engine) | Evaluates friction and strategic conflicts between Finance and Marketing projections, formulating executive reconciliation. | Finance Output + Marketing Output | Explicit identification of department disagreement and proposed resolution. |
-| **Operations & Risk** | `Cog` (Chief Operating Officer) | Assesses supply chain logistics, operational feasibility, execution bottlenecks, and regulatory compliance. | Problem + Research + Finance + Marketing Outputs | FEASIBLE / NOT FEASIBLE verdict with the single biggest operational bottleneck. |
-| **Devil's Advocate** | `Vex` (Critical Stress-Tester) | Challenges the single most dangerous assumption made across all departments before executive commitment. | All Department Dossiers (Research, Finance, Marketing, Operations) | ASSUMPTION CHALLENGED, WHY IT COULD BE WRONG, and WHAT CEO MUST VERIFY. |
-| **CEO Agent** | `Prime` (Chief Executive Officer) | Synthesizes all department inputs, compares alternative strategies, rejects sub-optimal paths, and issues the mandate. | All 6 Department Outputs + Challenge & Devil's Advocate Logs | Strategy Comparison, Final Decision, Evidence Used (citing agents by name), Rejected Alternative, Risks, 3 Implementation Steps with Owners, and 3 Measurable KPIs. |
-| **Surprise Agent** | `Prime-Adaptive` (Scenario Planner) | Re-evaluates corporate strategy under sudden market shocks (competitor price wars, regulatory shifts, supply failures). | Original CEO Decision + Injected Surprise Event | What Changed, What Stays the Same, Revised Strategy Directive, and Updated KPIs. |
-
----
-
-## 5. 5-Stage Boardroom Protocol Implementation
-
-The system strictly demonstrates the 5-stage boardroom protocol required by Section 3 of the Official Rulebook:
-
-1. **Stage 1 (Analyse):** Research, Finance, and Marketing agents independently examine the business brief from their respective domain lenses.
-2. **Stage 2 (Share):** Explicit data forwarding logged in the execution trace (`[SHARE] Research brief ingested by Finance`, `[SHARE] Department dossiers routed to Operations`).
-3. **Stage 3 (Challenge):** The Challenge Node actively pits Finance vs Marketing assumptions, while Devil's Advocate stress-tests the overall operational thesis.
-4. **Stage 4 (Compare):** The CEO agent explicitly compares two viable strategies (e.g., Aggressive Direct Entry vs Phased Capital-Light Expansion) before deciding.
-5. **Stage 5 (Decide):** The CEO selects one coordinated strategy, citing specific agents by name, documenting rejected alternatives, assigning department owners per implementation step, and committing to 3 measurable KPIs.
-
----
-
-## 6. Installation & Execution Instructions
-
-### Prerequisites
-* Python 3.10, 3.11, or 3.12
-* Google Gemini API Key ([Google AI Studio](https://aistudio.google.com/))
-
-### Step 1: Clone the Repository
+**Step 1 - Clone the repo:**
 ```bash
 git clone https://github.com/anuj-71/AgentZero.git
 cd AgentZero
 ```
 
-### Step 2: Set Up Virtual Environment
+**Step 2 - Install dependencies:**
 ```bash
-# Create virtual environment
-python -m venv .venv
-
-# Activate on Windows
-.venv\Scripts\activate
-
-# Activate on macOS / Linux
-source .venv/bin/activate
+pip install flask flask-cors langgraph langchain-core langchain-google-genai python-dotenv
 ```
 
-### Step 3: Install Dependencies
-```bash
-pip install -r requirements.txt
-```
-
-### Step 4: Configure Environment Variables
-Copy `.env.example` to `.env` and insert your API key:
-```bash
-cp .env.example .env
-```
-
-Edit `.env`:
+**Step 3 - Create .env file in project root:**
 ```env
-GOOGLE_API_KEY=your_actual_gemini_api_key_here
+GOOGLE_API_KEY=your_gemini_api_key_here
 GEMINI_MODEL=gemini-3.1-flash-lite
 ```
 
-### Step 5: Launch the Application
+**Step 4 - Run the server:**
 ```bash
 python app.py
 ```
 
-### Step 6: Access the Web Interfaces
-* **Interactive AI Boardroom UI:** Open `http://127.0.0.1:5000` in your web browser.
-* **Dark Terminal SPA UI:** Open `http://127.0.0.1:5000/terminal` in your web browser.
-* **CLI Execution (Headless):**
-  ```bash
-  python agents/swarm.py "A food delivery startup wants to expand to tier-2 Indian cities" "Competitor launched free delivery"
-  ```
+**Step 5 - Open in browser:**
+```
+http://127.0.0.1:5000
+```
+
+**Step 6 - Test backend only (optional):**
+```bash
+python agents/swarm.py "Your business problem here"
+```
+
+**Step 7 - Test with surprise round:**
+```bash
+python agents/swarm.py "Your business problem" "Your surprise event"
+```
 
 ---
 
-## 7. Models, Frameworks, Datasets & Services Used
+## Models, Frameworks and External Services
 
-* **Language Model:** Google Gemini 3.1 Flash Lite (`gemini-3.1-flash-lite`) via `langchain-google-genai` (low latency, high token efficiency, avoids rate-limit exhaustion during parallel multi-agent fan-out).
-* **Multi-Agent Orchestration:** LangGraph (`StateGraph`, `START`, `END`, conditional edges) with typed state reduction (`Annotated`, `TypedDict`).
-* **Backend Framework:** Python Flask with Flask-CORS for REST API endpoint serving (`POST /api/run`).
-* **Frontend Technologies:** HTML5, Vanilla CSS3 (Custom Dark Theme & Boardroom Canvas), Vanilla JavaScript (ES6+), Web Speech API for real-time speech synthesis (TTS).
-* **External APIs & Datasets:** Google Generative Language API. No private or copyright-protected training datasets used.
-
----
-
-## 8. Known Limitations & Failure-Handling Behavior
-
-### Failure-Handling Architecture (Rulebook Item 31 & 45)
-* **Per-Agent Try/Except Fallback:** Every agent invocation is wrapped in a dedicated error-handling wrapper in `_call_llm()`. If any individual agent fails (e.g. timeout, rate limit, or invalid response), the exception is caught, and a safe diagnostic placeholder is returned:
-  ```text
-  [AGENT ERROR] Finance Agent failed: <error details>. Proceeding with available data.
-  ```
-* **Non-Blocking Execution:** The graph workflow continues to the next node even if a department agent encounters an error, ensuring the CEO Agent always receives available evidence and produces a final decision.
-* **Debate Loop Control (Rulebook Item 30):** The LangGraph DAG topology is strictly deterministic with conditional branching terminating at `END`, preventing uncontrolled conversation loops.
-
-### Known Limitations
-* **API Rate Limits:** Free-tier Google AI Studio keys are subject to Requests-Per-Minute (RPM) limits. `gemini-3.1-flash-lite` was selected specifically to minimize quota consumption.
-* **TTS Platform Variance:** Web Speech API voice accents vary depending on the host OS and browser engine.
+| Component | Details |
+|-----------|---------|
+| LLM | Google Gemini 3.1 Flash Lite via Gemini API |
+| Agent Framework | LangGraph 1.x - StateGraph with fan-out/fan-in topology |
+| LLM Integration | LangChain Google GenAI (langchain-google-genai) |
+| Backend | Flask + Flask-CORS |
+| Frontend | Vanilla HTML/CSS/JS - no framework |
+| Voice | Web Speech API (browser-native, no external service) |
+| Environment | python-dotenv |
+| External APIs | Google Generative Language API only |
 
 ---
 
-## 9. Declaration of Pre-Existing & Reused Components
+## Agent Graph Topology
 
-In compliance with Academic and Competitive Integrity rules (Rulebook Section 10):
+```
+START
+  └── Research Agent
+        ├── Finance Agent ──────────┐
+        └── Marketing Agent ────────┴── Challenge Agent
+                                              ├── Operations Agent ──┐
+                                              └── Devil's Advocate ──┴── CEO Agent
+                                                                            └── Surprise Agent (if surprise input)
+                                                                                  └── END
+```
 
-* **Open-Source Libraries:** `langgraph`, `langchain-core`, `langchain-google-genai`, `flask`, `flask-cors`, `python-dotenv`.
-* **Fonts & Icons:** Google Fonts (Inter, JetBrains Mono), inline standard SVG icons.
-* **Original Work Created During Event:**
-  * Swarm architecture, state graph definition, and edge routing in `agents/swarm.py`.
-  * Specialized system prompts and explicit information exchange protocols.
-  * Flask REST API integration and payload serialization in `app.py`.
-  * AI Boardroom audio-visual canvas and state-driven UI in `ai_boardroom/templates/index.html`.
-  * Dark terminal single-page application in `frontend/index.html`.
+Two fan-outs and two fan-ins. Each agent is a separate LangGraph node with its own LLM instance.
 
 ---
 
-## 10. Repository Structure
+## Known Limitations and Failure Handling
+
+1. **Rate limits:** Each swarm run makes 7-8 Gemini API calls. Free tier allows 15 RPM. If rate limited, wait 60 seconds and retry.
+2. **Agent failure fallback:** Every agent wraps its LLM call in try/except. If one agent fails, it returns a fallback message and the graph continues - the CEO agent will note the missing input.
+3. **Surprise round re-runs full swarm:** The current implementation re-runs all agents when a surprise is injected. A future version would selectively re-run only affected agents.
+4. **Sequential fan-out:** LangGraph runs parallel fan-out nodes sequentially on a single thread in the default sync executor. True async parallelism requires async node definitions - not implemented in this version.
+5. **Context window:** Very long business problems (over 1,000 words) may cause agent outputs to truncate. Keep problem statements under 500 words for best results.
+6. **TTS availability:** Voice narration uses the browser Web Speech API. Quality depends on available system voices and may be unavailable on some browsers or OS configurations.
+
+---
+
+## Declaration of Pre-existing and Reused Components
+
+| Component | Source | Usage |
+|-----------|--------|-------|
+| LangGraph | Open-source, LangChain Inc. | Agent workflow orchestration |
+| LangChain Google GenAI | Open-source, LangChain Inc. | Gemini API integration |
+| Flask | Open-source, Pallets Projects | Web server |
+| Gemini API | Google | LLM inference for all agents |
+| Web Speech API | Browser-native W3C standard | TTS voice narration |
+| JetBrains Mono font | Open-source, JetBrains | UI typography |
+
+All agent logic, system prompts, graph topology, state design, frontend UI, and boardroom protocol implementation are original work created by Team Agent Zero for this hackathon.
+
+---
+
+## Project Structure
 
 ```text
 AgentZero/
 ├── agents/
-│   └── swarm.py                 # 6-agent LangGraph workflow, nodes, and state definitions
-├── ai_boardroom/
-│   ├── templates/
-│   │   └── index.html           # Interactive AI Boardroom UI with Canvas & TTS
-│   ├── core/
-│   │   └── config.py            # Boardroom configuration and voice profiles
-│   ├── open_app.py              # Standalone local launcher
-│   └── requirements.txt         # Module dependencies
+│   └── swarm.py          # LangGraph swarm - all 8 agent nodes
 ├── frontend/
-│   └── index.html               # Dark Terminal single-page application
-├── app.py                       # Flask REST server exposing /api/run and static routes
-├── requirements.txt             # Primary Python dependencies
-├── .env.example                 # Environment configuration template
-├── .gitignore                   # Git ignore protecting secrets (.env)
-└── README.md                    # Official project documentation and audit guide
+│   └── index.html        # Single-page web app
+├── app.py                # Flask server + API routes
+├── .env                  # API keys (not committed)
+├── README.md             # This file
+└── requirements.txt      # Dependencies
 ```
+
+---
+
+## Quick Demo Script (for judges)
+
+1. Open http://127.0.0.1:5000
+2. Enter any business problem in the Problem Statement field
+3. Click DEPLOY STRATEGY / CONVENE BOARDROOM
+4. Watch agents fire in sequence across the Swarm Analytics view
+5. Navigate to Decide to see the full CEO directive and KPIs
+6. Go to Surprise - inject an unexpected event
+7. Watch the swarm adapt and revise the decision
+
+---
+
+*Built at Agentic Swarm Hackathon - Team Agent Zero*
